@@ -16,5 +16,4 @@ récurent (lstm)
 
 - DQN
 - NEAT
-- Cartesian : https://arxiv.org/pdf/1806.05695.pdf
-
+- Cartesian : https://arxiv.org/pdf/1806.05695.pdf http://cs.ijs.si/ppsn2014/files/slides/ppsn2014-tutorial3-miller.pdf
