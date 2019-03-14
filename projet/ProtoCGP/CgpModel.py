@@ -69,6 +69,8 @@ class Genome:
             else:
                 res[i] = self.genotype[self.genotype[j]].evaluate(self.genotype)
         return res
+        # Comment prendre la décision ? CGP est il mieux opti en renvoyant une liste de nombres ? Une liste de bits ?
+        # Un seul nombre ?
 
     def mutate(self, nb_mutation: int):
         for _ in range(nb_mutation):
@@ -80,15 +82,17 @@ class Genome:
 
     @staticmethod
     def serialize() -> str:
+        # TODO trinity
         NotImplemented
 
 
 def deserialize_genome(s: str) -> Genome:
+    # TODO Trinity
     pass
 
 
 class Population(object):
-    list_genomes = []
+    list_genomes: [Genome] = []
     genome_config = GenomeConfig
 
     def __init__(self, genome_config: GenomeConfig, size=50):
@@ -96,15 +100,6 @@ class Population(object):
         for i in range(size):
             g = Genome(genome_config)
             self.list_genomes.append(g)
-
-    def make_them_play(self, nb_runs=5, keep=5):
-        # Do N runs
-
-        # get fitness
-
-        # get M better elem
-
-        pass
 
     def serialize(self) -> str:
         tmp_list = []
@@ -124,4 +119,5 @@ def deserialize_population(s: str, genome_config: GenomeConfig) -> Population:
 
 def generate_population_from(bests: Genome):
     # give birth bests.size - pop_size from bests winner by mutation
+    # TODO Je te laisse faire Trinity
     pass
