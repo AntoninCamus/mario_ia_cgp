@@ -2,8 +2,8 @@ import gym_super_mario_bros
 from gym_super_mario_bros.actions import SIMPLE_MOVEMENT
 from nes_py.wrappers import BinarySpaceToDiscreteSpaceEnv
 
-from ProtoCGP.CgpModel import Genome, Population
-from ProtoCGP.PictureProcessing import PictureFlattener
+from CgpModel import Genome, Population
+from PictureProcessing import PictureFlattener
 
 
 class EmuEnv:
@@ -27,7 +27,7 @@ class EmuEnv:
         return total_reward
 
     @staticmethod
-    def _make_them_play(p: Population, keep=5):
+    def make_them_play(p: Population, keep=5):
         # Fonction a paralleliser avec cython si on veut opti le tout
         e = EmuEnv()
         results: [int] = []
