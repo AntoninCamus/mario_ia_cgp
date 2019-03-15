@@ -111,11 +111,11 @@ class Genome:
 
     def serialize(self) -> str:
         res = [ node if type(node) is int else node.serialize() for node in self.genotype ]
-        return json.dumps(res)
+        return encode(json.dumps(res))
 
 
 def deserialize_genome(gc: GenomeConfig, s: str) -> Genome:
-    l = json.loads(s)
+    l = json.loads(decode(s))
     res = Genome(gc)
     res.genotype = [ node if type(node) is int else deserialize_neurone(gc, node) for node in l ]
     return res
@@ -152,3 +152,51 @@ def generate_population_from(bests: [Genome], child_count: int, muta_count=10):
     res = bests
     res += [ bests[randint(0, len(bests) - 1)].clone().mutate(muta_count) for _ in range(child_count - len(bests))]
     return res
+
+def encode(s: str):
+    res = str()
+    switch = {
+        "0": "AA",
+        "1": "AC",
+        "2": "AG",
+        "3": "AT",
+        "4": "CA",
+        "5": "CC",
+        "6": "CG",
+        "7": "CT",
+        "8": "GA",
+        "9": "GC",
+        "a": "GG",
+        "b": "GT",
+        "c": "TA",
+        "d": "TC",
+        "e": "TG",
+        "f": "TT",
+    }
+    for i in s.encode("utf-8").hex():
+        res+= switch[i]
+    return res
+
+def decode(s: str):
+    res = str()
+    switch = {
+            "AA": "0",
+            "AC": "1",
+            "AG": "2",
+            "AT": "3",
+            "CA": "4",
+            "CC": "5",
+            "CG": "6",
+            "CT": "7",
+            "GA": "8",
+            "GC": "9",
+            "GG": "a",
+            "GT": "b",
+            "TA": "c",
+            "TC": "d",
+            "TG": "e",
+            "TT": "f",
+    }
+    for i in [s[i:i+2] for i in range(0, len(s), 2)]:
+        res+= switch[i]
+    return bytearray.fromhex(res).decode()
