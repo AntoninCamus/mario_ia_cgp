@@ -131,12 +131,15 @@ class Population(object):
             g = Genome(genome_config)
             self.list_genomes.append(g)
 
-    def serialize(self) -> str:
+    def serialize(self) -> [dict]:
         tmp_list = []
         for g in self.list_genomes:
             tmp_list.append(g.serialize())
         return json.dumps(self.list_genomes)
 
+    def save(self, save_name: str, save_dir="./saves/") -> None:
+        with open("{}{}.json".format(save_dir, save_name), "w+") as outfile:
+            json.dump(self.serialize(), outfile)
 
 def deserialize_population(s: str, genome_config: GenomeConfig) -> Population:
     tmp_list = json.loads(s)
