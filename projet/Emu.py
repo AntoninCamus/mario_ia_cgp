@@ -11,13 +11,17 @@ class EmuEnv:
         self.env = gym_super_mario_bros.make('SuperMarioBros-2-1-v3')
         self.env = BinarySpaceToDiscreteSpaceEnv(self.env, SIMPLE_MOVEMENT)
 
-    def _make_it_play(self, g: Genome) -> int:
+    def _make_it_play(self, g: Genome, render: bool) -> int:
         flattener = PictureFlattener()
         observation = self.env.reset()
         total_reward = 0.0
-        for i in range(5000):
-            self.env.render()
-            action = self.env.action_space[g.evaluate(flattener.process(observation))]
+        for i in range(500):
+            if render:
+                self.env.render()
+            # ob_flat = flattener.process(observation)
+            # decision = g.evaluate(ob_flat)
+            # action = decision.index(max(decision)) #TODO Optimize function by using np.array and optimize picture
+            action = self.env.action_space.sample()
             observation, reward, done, info = self.env.step(action)
             total_reward += reward
             if done:
@@ -27,13 +31,14 @@ class EmuEnv:
         return total_reward
 
     @staticmethod
-    def make_them_play(p: Population, keep=5):
+    def make_them_play(p: Population, keep=5, render=False, debug=False):
         # Fonction a paralleliser avec cython si on veut opti le tout
         e = EmuEnv()
         results: [int] = []
         for i in range(len(p.list_genomes)):
-            results[i] = (e._make_it_play(p.list_genomes[i]), p.list_genomes[i])
+            res = e._make_it_play(p.list_genomes[i], render), p.list_genomes[i]
+            results.insert(i, res)
             # Paralleliser à l'aide de cython ou d'autre chose ?
             # http://nealhughes.net/parallelcomp2/
         # Get 5 (or keep) best genome by sorting by mark the list, slice it and reconstruct it
-        return [t[1] for t in results.sort(key=lambda t: t[0])[:(keep + 1)]]
+        return [t[1] for t in sorted(results, key=lambda x: x[0])[0:keep]]

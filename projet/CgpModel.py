@@ -63,12 +63,14 @@ class Neurone:
         res["func"] = self.func
         return res
 
+
 def deserialize_neurone(genome_config: GenomeConfig, d: dict) -> Neurone:
     res = Neurone(genome_config, d["col_id"])
     res.pred1 = d["pred1"]
     res.pred2 = d["pred2"]
     res.func = d["func"]
     return res
+
 
 class Genome:
     def __init__(self, genome_config: GenomeConfig):
@@ -90,14 +92,12 @@ class Genome:
             else:
                 res[i] = self.genotype[self.genotype[j]].evaluate(self.genotype)
         return res
-        # Comment prendre la décision ? CGP est il mieux opti en renvoyant une liste de nombres ? Une liste de bits ?
-        # Un seul nombre ?
 
     def clone(self):
         res = Genome(self.conf)
         res.genotype = [0] * res.conf.inp
-        res.genotype += [ self.genotype[res.conf.inp + i].clone() for i in range(res.conf.row * res.conf.col)]
-        res.genotype += [ self.genotype[res.conf.inp + res.conf.row * res.conf.col + i] for i in range(res.conf.out)]
+        res.genotype += [self.genotype[res.conf.inp + i].clone() for i in range(res.conf.row * res.conf.col)]
+        res.genotype += [self.genotype[res.conf.inp + res.conf.row * res.conf.col + i] for i in range(res.conf.out)]
         return res
 
     def mutate(self, nb_mutation: int):
@@ -110,14 +110,14 @@ class Genome:
         return self
 
     def serialize(self) -> str:
-        res = [ node if type(node) is int else node.serialize() for node in self.genotype ]
+        res = [node if type(node) is int else node.serialize() for node in self.genotype]
         return encode(json.dumps(res))
 
 
 def deserialize_genome(gc: GenomeConfig, s: str) -> Genome:
-    l = json.loads(decode(s))
+    list_nodes = json.loads(decode(s))
     res = Genome(gc)
-    res.genotype = [ node if type(node) is int else deserialize_neurone(gc, node) for node in l ]
+    res.genotype = [node if type(node) is int else deserialize_neurone(gc, node) for node in list_nodes]
     return res
 
 
@@ -125,7 +125,7 @@ class Population(object):
     list_genomes: [Genome] = []
     genome_config = GenomeConfig
 
-    def __init__(self, genome_config: GenomeConfig, size=50):
+    def __init__(self, genome_config: GenomeConfig, size: int):
         self.genome_config = genome_config
         for i in range(size):
             g = Genome(genome_config)
@@ -140,9 +140,9 @@ class Population(object):
 
 def deserialize_population(s: str, genome_config: GenomeConfig) -> Population:
     tmp_list = json.loads(s)
-    new_pop = Population(genome_config)
+    new_pop = Population(genome_config, len(tmp_list))
     for e in tmp_list:
-        g = deserialize_genome(e)
+        g = deserialize_genome(e, s)
         new_pop.list_genomes.append(g)
     return new_pop
 
@@ -150,8 +150,9 @@ def deserialize_population(s: str, genome_config: GenomeConfig) -> Population:
 def generate_population_from(bests: [Genome], child_count: int, muta_count=10):
     # give birth bests.size - pop_size from bests winner by mutation
     res = bests
-    res += [ bests[randint(0, len(bests) - 1)].clone().mutate(muta_count) for _ in range(child_count - len(bests))]
+    res += [bests[randint(0, len(bests) - 1)].clone().mutate(muta_count) for _ in range(child_count - len(bests))]
     return res
+
 
 def encode(s: str):
     res = str()
@@ -174,29 +175,30 @@ def encode(s: str):
         "f": "TT",
     }
     for i in s.encode("utf-8").hex():
-        res+= switch[i]
+        res += switch[i]
     return res
+
 
 def decode(s: str):
     res = str()
     switch = {
-            "AA": "0",
-            "AC": "1",
-            "AG": "2",
-            "AT": "3",
-            "CA": "4",
-            "CC": "5",
-            "CG": "6",
-            "CT": "7",
-            "GA": "8",
-            "GC": "9",
-            "GG": "a",
-            "GT": "b",
-            "TA": "c",
-            "TC": "d",
-            "TG": "e",
-            "TT": "f",
+        "AA": "0",
+        "AC": "1",
+        "AG": "2",
+        "AT": "3",
+        "CA": "4",
+        "CC": "5",
+        "CG": "6",
+        "CT": "7",
+        "GA": "8",
+        "GC": "9",
+        "GG": "a",
+        "GT": "b",
+        "TA": "c",
+        "TC": "d",
+        "TG": "e",
+        "TT": "f",
     }
-    for i in [s[i:i+2] for i in range(0, len(s), 2)]:
-        res+= switch[i]
+    for i in [s[i:i + 2] for i in range(0, len(s), 2)]:
+        res += switch[i]
     return bytearray.fromhex(res).decode()
