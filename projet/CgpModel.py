@@ -5,7 +5,7 @@ _default_func = [
     lambda x, y: x + y,
     lambda x, y: x - y,
     lambda x, y: x * y,
-    lambda x, y: x / y
+    lambda x, y: x / y if y != 0 else x
 ]
 
 
@@ -53,7 +53,8 @@ class Neurone:
         elif rand == 1:
             self.pred2 = randint(0, self.conf.inp + self.col_id * self.conf.row - 1)
         else:
-            self.func = self.conf.func[randint(0, len(self.conf.func) - 1)]
+            self.func = randint(0, len(self.conf.func) - 1)
+
 
     def serialize(self) -> dict:
         res = dict()
@@ -111,11 +112,11 @@ class Genome:
 
     def serialize(self) -> str:
         res = [node if type(node) is int else node.serialize() for node in self.genotype]
-        return encode(json.dumps(res))
+        #return encode(json.dumps(res))
+        return res
 
-
-def deserialize_genome(gc: GenomeConfig, s: str) -> Genome:
-    list_nodes = json.loads(decode(s))
+def deserialize_genome(gc: GenomeConfig, list_nodes) -> Genome:
+    #list_nodes = json.loads(decode(s))
     res = Genome(gc)
     res.genotype = [node if type(node) is int else deserialize_neurone(gc, node) for node in list_nodes]
     return res
@@ -135,11 +136,12 @@ class Population(object):
         tmp_list = []
         for g in self.list_genomes:
             tmp_list.append(g.serialize())
-        return json.dumps(self.list_genomes)
+        return tmp_list
 
     def save(self, save_name: str, save_dir="./saves/") -> None:
         with open("{}{}.json".format(save_dir, save_name), "w+") as outfile:
             json.dump(self.serialize(), outfile)
+
 
 def deserialize_population(s: str, genome_config: GenomeConfig) -> Population:
     tmp_list = json.loads(s)

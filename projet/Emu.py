@@ -17,8 +17,8 @@ class EmuEnv:
         for i in range(500):
             if render:
                 self.env.render()
-            ob_flat = self.processor.process(observation)
-            decision = g.evaluate(ob_flat).tolist()
+            ob_flat = self.processor.process(observation).tolist()
+            decision = g.evaluate(ob_flat)
             action = decision.index(max(decision))  # TODO Optimize function by using np.array and optimize picture
             # action = self.env.action_space.sample()
             observation, reward, done, info = self.env.step(action)

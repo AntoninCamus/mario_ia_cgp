@@ -16,7 +16,7 @@ render = False
 
 def learn():
     image_processor = PictureReducer()
-    cfg = GenomeConfig(image_processor.get_dim(), 7)  # TODO TO TUNE
+    cfg = GenomeConfig(image_processor.get_dim(), 7, row=64, col=64)  # TODO TO TUNE
     pop = Population(cfg, size=POP_SIZE)
     for i in range(NB_GENS):
         if debug:
@@ -33,10 +33,11 @@ def learn():
 
 
 def profile_run():
-    for i in range(1):
-        cfg = GenomeConfig(PictureFlattener.get_dim(), 7)
-        bests = EmuEnv.make_them_play(Population(cfg, size=1), render=render)
-        generate_population_from(bests, 5)
+    for i in range(2):
+        image_processor = PictureReducer()
+        cfg = GenomeConfig(image_processor.get_dim(), 7, row=64, col=64)
+        bests = EmuEnv.make_them_play(Population(cfg, size=10), image_processor, render=render)
+        generate_population_from(bests, 5, cfg)
 
 
 def profile():
