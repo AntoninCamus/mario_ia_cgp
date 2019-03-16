@@ -9,10 +9,6 @@ class PictureFlattener:
         return 240 * 256 * 3
 
     def process(self, screen: [[[]]]) -> []:
-        # res = []
-        # for column_of_pixels in screen:
-        #    res += [color for pixel in column_of_pixels for color in pixel]
-        # return res
         return np.array(screen).flatten()
 
 
@@ -20,15 +16,14 @@ class PictureReducer:
 
     @classmethod
     def get_dim(cls) -> int:
-        return 15 * 14
+        return 60 * 56
 
-    def process(self, screen: [[[]]], debug=False) -> []:
+    def process(self, screen: [[[]]]) -> []:
         screen = cv2.cvtColor(screen, cv2.COLOR_BGR2GRAY)
-        screen = cv2.resize(screen, (15, 14))
-        if debug:
-            cv2.imshow('main', screen)
-            cv2.waitKey(1)
-        screen = np.reshape(screen, (15, 14))
+        screen = cv2.resize(screen, (60, 56))
+        cv2.imshow('main', screen)
+        cv2.waitKey(1)
+        screen = np.reshape(screen, (60, 56))
         return screen.flatten()
 
         # 1 PIX = 16*16
