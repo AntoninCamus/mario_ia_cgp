@@ -4,7 +4,7 @@ import sys
 
 from CgpModel import Population, generate_population_from, GenomeConfig
 from Emu import EmuEnv
-from PictureProcessing import PictureFlattener
+from PictureProcessing import *
 
 NB_GENS = 10000
 POP_SIZE = 50
@@ -15,15 +15,16 @@ render = False
 
 
 def learn():
-    cfg = GenomeConfig(PictureFlattener.get_dim(), 7)  # TODO TO TUNE
+    image_processor = PictureReducer()
+    cfg = GenomeConfig(image_processor.get_dim(), 7)  # TODO TO TUNE
     pop = Population(cfg, size=POP_SIZE)
     for i in range(NB_GENS):
         if debug:
             print("Testing generation {} : {}...".format(i, pop))
-        bests = EmuEnv.make_them_play(pop, render=render, debug=debug)
+        bests = EmuEnv.make_them_play(pop, image_processor, render=render, debug=debug)
         if debug:
             print("Best of them were {}...".format(bests))
-        pop = generate_population_from(bests, POP_SIZE)
+        pop = generate_population_from(bests, POP_SIZE, cfg)
         if i % SAVE_EVERY == 0:
             save_name = "save_" + str(i)
             if debug:
@@ -57,8 +58,6 @@ def main():
         print("Rendering activated")
         global render
         render = True
-        learn()
-        sys.exit()
     if args.profile:
         print("Starting profiling")
         profile()

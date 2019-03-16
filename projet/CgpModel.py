@@ -147,10 +147,11 @@ def deserialize_population(s: str, genome_config: GenomeConfig) -> Population:
     return new_pop
 
 
-def generate_population_from(bests: [Genome], child_count: int, muta_count=10):
+def generate_population_from(bests: [Genome], pop_size: int, genome_config: GenomeConfig, muta_count=10) -> Population:
     # give birth bests.size - pop_size from bests winner by mutation
-    res = bests
-    res += [bests[randint(0, len(bests) - 1)].clone().mutate(muta_count) for _ in range(child_count - len(bests))]
+    res = Population(genome_config, pop_size)
+    Population.list_genomes = bests + [bests[randint(0, len(bests) - 1)].clone().mutate(muta_count) for _ in
+                                       range(pop_size - len(bests))]
     return res
 
 
