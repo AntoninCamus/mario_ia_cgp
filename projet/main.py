@@ -3,8 +3,8 @@ import cProfile
 import sys
 
 from core.cgp_model import GenomeConfig, Genome
-from core.cgp_utilies import generate_genomes_from, serialize_genomes_list, deserialize_genomes_list, save_genomes_list
 from core.emu_env import EmuEnv
+from core.cgp_utilies import *
 from core.picture_processing import *
 
 # Hyper parameters
@@ -19,12 +19,18 @@ KEEP = 5
 # Program parameters
 debug = False
 render = False
+image_processor = PictureReducer()
 
 
-def learn():
-    image_processor = PictureReducer()
+def learn(save_name=None):
     cfg = GenomeConfig(image_processor.get_dim(), 7, GENOME_SIZE)
-    pop = [Genome(cfg) for _ in range(POP_SIZE)]
+
+    if save_name is None:
+        pop = [Genome(cfg) for _ in range(POP_SIZE)]
+    else:
+        loaded = load_genomes_list(cfg, save_name)
+        pop = generate_genomes_from(loaded, POP_SIZE)
+
     for i in range(1, NB_GENS):
         if debug:
             print("Testing generation {} : {}...".format(i, pop))
@@ -33,21 +39,24 @@ def learn():
         bests = EmuEnv.make_them_play(pop, image_processor, keep=KEEP, render=render, debug=debug)
         if debug:
             print("Best of them were {}...".format(bests))
-        pop = generate_genomes_from(bests, POP_SIZE)
         if i % SAVE_EVERY == 0:
             save_name = "save_" + str(i)
             if debug:
                 print("Saving in {}...".format(save_name))
             save_genomes_list(bests, save_name)
+        pop = generate_genomes_from(bests, POP_SIZE)
 
 
-def learn_mpi(comm):
+def learn_mpi(comm, save_name=None):
     rank = comm.Get_rank()
 
-    image_processor = PictureReducer()
     cfg = GenomeConfig(image_processor.get_dim(), 7, GENOME_SIZE)
 
-    pop = [Genome(cfg) for _ in range(POP_SIZE)]
+    if save_name is None:
+        pop = [Genome(cfg) for _ in range(POP_SIZE)]
+    else:
+        loaded = load_genomes_list(cfg, save_name)
+        pop = generate_genomes_from(loaded, POP_SIZE)
 
     for i in range(1, NB_GENS):
         if rank == 0:
@@ -88,10 +97,11 @@ def profile():
 
 def main():
     parser = argparse.ArgumentParser(description='Cartesian Genetical Program playing Mario Bros :3')
-    parser.add_argument("-d", "--debug", help="Affiche les textes de débogage", action="store_true")
-    parser.add_argument("-r", "--render", help="Affiche les parties en cours", action="store_true")
+    parser.add_argument("-l", "--load", help="Charge une sauvegarde")
     parser.add_argument("-m", "--mpi", help="Se lance en distribué MPI, incompatible avec le profiling",
                         action="store_true")
+    parser.add_argument("-d", "--debug", help="Affiche les textes de débogage", action="store_true")
+    parser.add_argument("-r", "--render", help="Affiche les parties en cours", action="store_true")
     parser.add_argument("-p", "--profile", help="Profile un run, incompatible avec le lancement via mpi",
                         action="store_true")
     args = parser.parse_args()
@@ -103,6 +113,11 @@ def main():
         print("Rendering activated")
         global render
         render = True
+    if args.load:
+        print("Loading save {}".format(args.load))
+        save_name = args.load
+    else:
+        save_name = None
 
     if args.profile:
         print("Starting profiling")
@@ -113,11 +128,11 @@ def main():
         comm = MPI.COMM_WORLD
         if comm.Get_rank() == 0:
             print("Starting learning with MPI")
-        learn_mpi(comm)
+        learn_mpi(comm, save_name)
         sys.exit()
     else:
         print("Starting learning")
-        learn()
+        learn(save_name)
         sys.exit()
 
 
