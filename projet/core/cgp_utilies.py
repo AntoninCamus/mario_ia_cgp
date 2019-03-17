@@ -1,43 +1,49 @@
 import json
 from random import randint
 
-from core.cgp_model import Genome, GenomeConfig
+from core.cgp_model import Genome, GenomeConfig, Population
 
 
-def serialize_genomes_list(genomes_list: [Genome], real_adn=False) -> []:
-    serialized_list = []
-    for g in genomes_list:
-        if real_adn:
-            serialized_list.append(encode(json.dumps(g.to_list_of_dict())))
-        else:
-            serialized_list.append(g.to_list_of_dict())
-    return serialized_list
-
-
-def save_genomes_list(list_genomes: [Genome], save_name: str, save_dir="./saves/", real_adn=False):
-    with open("{}{}.json".format(save_dir, save_name), "w+") as outfile:
-        json.dump(serialize_genomes_list(list_genomes, real_adn=real_adn), outfile)
-
-
-def deserialize_genomes_list(serialized_list: [], genome_config: GenomeConfig, real_adn=False) -> [Genome]:
+def deserialize_population(serialized_pop: [], genome_config: GenomeConfig, real_adn=False) -> Population:
     new_genomes_list = []
-    for e in serialized_list:
+    scores = []
+    for e in serialized_pop:
         if real_adn:
-            new_genomes_list.append(Genome.from_list_of_dict(json.loads(decode(e)), genome_config))
+            new_genomes_list.append(Genome.from_list_of_dict(json.loads(decode(e))[1], genome_config))
+            scores.append(json.loads(decode(e))[0])
         else:
-            new_genomes_list.append(Genome.from_list_of_dict(e, genome_config))
-    return new_genomes_list
+            new_genomes_list.append(Genome.from_list_of_dict(e[1], genome_config))
+            scores.append(e[0])
+    pop = Population(genome_config, len(new_genomes_list))
+    pop.list_genomes = new_genomes_list
+    pop.list_scores = scores
+    return pop
 
+def merge_populations(pop: Population, pops: [Population]):
+    lg = pop.list_genomes
+    ls = pop.list_scores
+    for p in pops:
+        lg += p.list_genomes
+        ls += p.list_scores
+    # remove duplicate
+    filtered_g = []
+    filtered_s = []
+    for i in range(len(lg)):
+        gen1 = lg[i]
+        can_add = True
+        for j in range(len(filtered_g)):
+            gen2 = filtered_g[j]
+            if gen1 == gen2:
+                can_add = False
+        if can_add:
+            filtered_g.append(lg[i])
+            filtered_s.append(ls[i])
+    pop.list_genomes = filtered_g
+    pop.list_scores = filtered_s
 
-def load_genomes_list(genome_config: GenomeConfig, save_name: str, save_dir="./saves/", real_adn=False):
+def load_population(genome_config: GenomeConfig, save_name: str, save_dir="./saves/", real_adn=False):
     with open("{}{}.json".format(save_dir, save_name), "r") as infile:
-        return deserialize_genomes_list(json.load(infile), genome_config, real_adn=real_adn)
-
-
-def generate_genomes_from(bests: [Genome], pop_size: int, muta_count=10) -> [Genome]:
-    # give birth bests.size - pop_size from bests winner by mutation
-    return bests + [bests[randint(0, len(bests) - 1)].clone().mutate(muta_count) for _ in
-                    range(pop_size - len(bests))]
+        return deserialize_population(json.load(infile), genome_config, real_adn=real_adn)
 
 
 def encode(s: str):

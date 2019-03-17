@@ -1,4 +1,5 @@
-from random import randint
+from random import randint,choice
+import json
 
 import numpy as np
 
@@ -58,6 +59,9 @@ class Neurone:
             "func": self.func
         }
 
+    def __eq__(self, other):
+        return self.pred1 == other.pred1 and self.pred2 == other.pred2 and self.func == other.func
+
     @staticmethod
     def from_dict(d: dict, genome_config: GenomeConfig):
         res = Neurone(genome_config, d["node_id"])
@@ -88,6 +92,9 @@ class OutputNeurone:
             "type": "OutputNeurone",
             "pred": self.pred
         }
+
+    def __eq__(self, other):
+        return self.pred == other.pred
 
     @staticmethod
     def from_dict(d: dict, genome_config: GenomeConfig):
@@ -132,7 +139,7 @@ class Genome:
     def mutate(self, nb_mutation: int):
         for _ in range(nb_mutation):
             self.compute_used_node()
-            while True:
+            for _ in range(100):
                 i = randint(0, len(self.genotype) - 1)
                 self.genotype[i].mutate()
                 if self.used_node[i]:
@@ -140,8 +147,22 @@ class Genome:
         self.compute_used_node()
         return self
 
+    def bread(self, other):
+        self.genotype = [self.genotype[i] if choice([True, False]) else other.genotype[i].clone() for i in range(len(self.genotype))]
+        self.compute_used_node()
+        return self
+
     def to_list_of_dict(self) -> []:
         return [node.to_dict() for node in self.genotype]
+
+    def __eq__(self, other):
+        if len(self.genotype) != len(other.genotype):
+            return False
+        for i in range(len(self.genotype)):
+            if self.genotype[i] != other.genotype[i]:
+                return False
+        return True
+
 
     @staticmethod
     def from_list_of_dict(l: list, gc: GenomeConfig):
@@ -151,3 +172,54 @@ class Genome:
                         for node in l]
         res.compute_used_node()
         return res
+
+
+class Population(object):
+    list_genomes: [Genome] = []
+    list_score: [] = []
+    genome_config: GenomeConfig
+    size: int
+    keep: int
+    bread: int
+    muta_count: int
+
+    def __init__(self, genome_config: GenomeConfig, size = 50, keep = 5, bread = None, muta_count = None):
+        self.list_genomes = [Genome(genome_config) for _ in range(size)]
+        self.list_scores = [None] * size
+        self.genome_config = genome_config
+        self.size = size
+        self.keep = keep
+        if bread is None:
+            self.bread = (size - keep)//4
+        else:
+            self.bread = bread
+        if muta_count is None:
+            self.muta_count = genome_config.node//40
+        else:
+            self.muta_count = muta_count
+
+    def keep_bests(self):
+        zipres = [(self.list_scores[i],self.list_genomes[i]) for i in range(len(self.list_genomes))]
+        bests = [t for t in sorted(zipres, key=lambda x: x[0])[-self.keep:]][::-1]
+        self.list_scores = [i[0] for i in bests]
+        self.list_genomes = [i[1] for i in bests]
+
+    def next_gen(self):
+        zipres = [(self.list_scores[i], self.list_genomes[i]) for i in range(len(self.list_genomes))]
+        new_parents = [t for t in sorted(zipres, key=lambda x: x[0])[-self.keep:]][::-1]
+        new_bread = [(None, choice(new_parents)[1].clone().bread(choice(new_parents)[1])) for _ in range(self.bread)]
+        new_mutated = [(None, choice(new_parents)[1].clone().mutate(self.muta_count)) for _ in
+                       range(self.size - self.keep - self.bread)]
+        new = new_parents + new_bread + new_mutated
+        self.list_scores = [i[0] for i in new]
+        self.list_genomes = [i[1] for i in new]
+
+    def serialize(self) -> []:
+        tmp_list = []
+        for i in range(len(self.list_genomes)):
+            tmp_list.append((self.list_scores[i], self.list_genomes[i].to_list_of_dict()))
+        return tmp_list
+
+    def save(self, save_name: str, save_dir="./saves/") -> None:
+        with open("{}{}.json".format(save_dir, save_name), "w+") as outfile:
+            json.dump(self.serialize(), outfile)

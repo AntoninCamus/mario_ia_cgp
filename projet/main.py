@@ -2,7 +2,7 @@ import argparse
 import cProfile
 import sys
 
-from core.cgp_model import GenomeConfig, Genome
+from core.cgp_model import GenomeConfig, Genome, Population
 from core.emu_env import EmuEnv
 from core.cgp_utilies import *
 from core.picture_processing import *
@@ -26,25 +26,28 @@ def learn(save_name=None):
     cfg = GenomeConfig(image_processor.get_dim(), 7, GENOME_SIZE)
 
     if save_name is None:
-        pop = [Genome(cfg) for _ in range(POP_SIZE)]
+        pop = Population(cfg, POP_SIZE, KEEP)
     else:
-        loaded = load_genomes_list(cfg, save_name)
-        pop = generate_genomes_from(loaded, POP_SIZE)
+        pop = load_population(cfg, save_name)
+        pop.size = POP_SIZE
+        pop.keep = KEEP
+        pop.next_gen()
 
     for i in range(1, NB_GENS):
         if debug:
             print("Testing generation {} : {}...".format(i, pop))
         else:
             print("Testing generation {} ...".format(i))
-        bests = EmuEnv.make_them_play(pop, image_processor, keep=KEEP, render=render, debug=debug)
+        EmuEnv.make_them_play(pop, image_processor, keep=KEEP, render=render, debug=debug)
+        pop.keep_bests()
         if debug:
-            print("Best of them were {}...".format(bests))
+            print("Best scores were {}...".format(pop.list_scores[:5]))
         if i % SAVE_EVERY == 0:
             save_name = "save_" + str(i)
             if debug:
                 print("Saving in {}...".format(save_name))
-            save_genomes_list(bests, save_name)
-        pop = generate_genomes_from(bests, POP_SIZE)
+            pop.save(save_name)
+        pop.next_gen()
 
 
 def learn_mpi(comm, save_name=None):
@@ -53,10 +56,12 @@ def learn_mpi(comm, save_name=None):
     cfg = GenomeConfig(image_processor.get_dim(), 7, GENOME_SIZE)
 
     if save_name is None:
-        pop = [Genome(cfg) for _ in range(POP_SIZE)]
+        pop = Population(cfg, POP_SIZE, KEEP)
     else:
-        loaded = load_genomes_list(cfg, save_name)
-        pop = generate_genomes_from(loaded, POP_SIZE)
+        pop = load_population(cfg, save_name)
+        pop.size = POP_SIZE
+        pop.keep = KEEP
+        pop.next_gen()
 
     for i in range(1, NB_GENS):
         if rank == 0:
@@ -66,29 +71,29 @@ def learn_mpi(comm, save_name=None):
                 print("Testing generation {} ...".format(i))
         if debug:
             print("Testing generation {} on worker {} : {}...".format(i, rank, pop))
-        bests = EmuEnv.make_them_play(pop, image_processor, keep=KEEP, render=render, debug=debug)
+        EmuEnv.make_them_play(pop, image_processor, keep=KEEP, render=render, debug=debug)
+        pop.keep_bests()
         if debug:
-            print("Best of them on worker {} were {}...".format(rank, bests))
-
+            print("Best scores were {}...".format(pop.list_scores[:5]))
+        
         # All Gathering :
-        shared = comm.allgather(serialize_genomes_list(bests))
-        merged = [genome for genome_list in shared for genome in genome_list]
-        bests = deserialize_genomes_list(merged, cfg)
+        shared = [deserialize_population(p, pop.genome_config) for p in comm.allgather(pop.serialize())]
+        merge_populations(pop, shared)
 
         if rank == 0 and i % SAVE_EVERY == 0:
             save_name = "save_" + str(i)
             if debug:
                 print("Saving in {}...".format(save_name))
-            save_genomes_list(bests, save_name)
-        pop = generate_genomes_from(bests, POP_SIZE)
+            pop.save(save_name)
+        pop.next_gen()
 
 
 def profile_run():
     for i in range(2):
-        image_processor = PictureReducer()
         cfg = GenomeConfig(image_processor.get_dim(), 7, 1000)
-        bests = EmuEnv.make_them_play([Genome(cfg) for _ in range(10)], image_processor, render=render)
-        generate_genomes_from(bests, 10, cfg)
+        pop = Population(cfg, 10)
+        EmuEnv.make_them_play(pop, image_processor, render=render)
+        pop.next_gen()
 
 
 def profile():
@@ -96,7 +101,7 @@ def profile():
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Cartesian Genetical Program playing Mario Bros :3')
+    parser = argparse.ArgumentParser(description='Cartesian Genetic Program playing Mario Bros :3')
     parser.add_argument("-l", "--load", help="Charge une sauvegarde")
     parser.add_argument("-m", "--mpi", help="Se lance en distribué MPI, incompatible avec le profiling",
                         action="store_true")

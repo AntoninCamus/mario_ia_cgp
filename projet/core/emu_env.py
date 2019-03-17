@@ -2,8 +2,7 @@ import gym_super_mario_bros
 from gym_super_mario_bros.actions import SIMPLE_MOVEMENT
 from nes_py.wrappers import BinarySpaceToDiscreteSpaceEnv
 
-from core.cgp_model import Genome
-
+from core.cgp_model import Population, Genome
 
 class EmuEnv:
     def __init__(self, processor):
@@ -14,6 +13,7 @@ class EmuEnv:
     def _make_it_play(self, g: Genome, render: bool) -> int:
         observation = self.env.reset()
         total_reward = 0.0
+        stuck_score = 0
         for i in range(500):
             if render:
                 self.env.render()
@@ -23,20 +23,23 @@ class EmuEnv:
             # action = self.env.action_space.sample()
             observation, reward, done, info = self.env.step(action)
             total_reward += reward
-            if done:
-                total_reward /= i
+            stuck_score += reward
+            if total_reward < 0:
                 break
-            pass
+            if i%50 == 49:
+                if stuck_score <= 0:
+                    break
+                stuck_score = 0
+            if done:
+                break
         return total_reward
 
     @staticmethod
-    def make_them_play(list_genomes: [Genome], processor, keep=5, render=False, debug=False):
+    def make_them_play(p: Population, processor, keep=5, render=False, debug=False):
         e = EmuEnv(processor)
-        results: [int] = []
-        for i in range(len(list_genomes)):
-            res = e._make_it_play(list_genomes[i], render), list_genomes[i]
+        for i in range(len(p.list_genomes)):
+            if p.list_scores[i] is None:
+                p.list_scores[i] = e._make_it_play(p.list_genomes[i], render)
             if debug:
-                print("Genome {} got reward {}".format(res[1], res[0]))
-            results.insert(i, res)
+                print("Genome {} got reward {}".format(p.list_genomes[i], p.list_scores[i]))
         # Get 5 (or keep) best genome by sorting by mark the list, slice it and reconstruct it
-        return [t[1] for t in sorted(results, key=lambda x: x[0])[0:keep]]
