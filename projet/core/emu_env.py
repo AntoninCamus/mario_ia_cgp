@@ -7,7 +7,7 @@ from core.cgp_model import Genome
 
 class EmuEnv:
     def __init__(self, processor):
-        self.env = gym_super_mario_bros.make('SuperMarioBros-2-1-v2')
+        self.env = gym_super_mario_bros.make('SuperMarioBros-2-1-v3')
         self.env = BinarySpaceToDiscreteSpaceEnv(self.env, SIMPLE_MOVEMENT)
         self.processor = processor
 

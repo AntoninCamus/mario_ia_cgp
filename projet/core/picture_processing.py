@@ -16,17 +16,16 @@ class PictureReducer:
 
     @classmethod
     def get_dim(cls) -> int:
-        return 60 * 56
+        return 30 * 24 * 3
 
     def process(self, screen: [[[]]]) -> []:
-        screen = cv2.cvtColor(screen, cv2.COLOR_BGR2GRAY)
-        screen = cv2.resize(screen, (60, 56))
+        screen = cv2.cvtColor(screen, cv2.COLOR_RGB2BGR)
+        screen = cv2.resize(screen, (30, 24))
         cv2.imshow('main', screen)
         cv2.waitKey(1)
-        screen = np.reshape(screen, (60, 56))
-        return screen.flatten()
-
-        # 1 PIX = 16*16
+        screen = screen.flatten()
+        screen = np.reshape(screen, 30 * 24 * 3)
+        return screen
 
 
 class PictureAnalyser:
