@@ -11,9 +11,11 @@ from core.picture_processing import *
 NB_GENS = 10000
 POP_SIZE = 100
 GENOME_SIZE = 512
+BREED = 2
+MUTA = 50
 
 # Saving parameters
-SAVE_EVERY = 10
+SAVE_EVERY = 5
 KEEP = 5
 
 # Program parameters
@@ -26,7 +28,7 @@ def learn(save_name=None):
     cfg = GenomeConfig(image_processor.get_dim(), 7, GENOME_SIZE)
 
     if save_name is None:
-        pop = Population(cfg, POP_SIZE, KEEP)
+        pop = Population(cfg, POP_SIZE, KEEP, BREED, MUTA)
     else:
         pop = load_population(cfg, save_name)
         pop.size = POP_SIZE
@@ -77,14 +79,14 @@ def learn_mpi(comm, save_name=None):
             print("Best scores were {}...".format(pop.list_scores[:5]))
         
         # All Gathering :
-        shared = [deserialize_population(p, pop.genome_config) for p in comm.allgather(pop.serialize())]
-        merge_populations(pop, shared)
-
-        if rank == 0 and i % SAVE_EVERY == 0:
-            save_name = "save_" + str(i)
-            if debug:
-                print("Saving in {}...".format(save_name))
-            pop.save(save_name)
+        if i % SAVE_EVERY == 0:
+            shared = [deserialize_population(p, pop.genome_config) for p in comm.allgather(pop.serialize())]
+            merge_populations(pop, shared)
+            if rank == 0:
+                save_name = "save_" + str(i)
+                if debug:
+                    print("Saving in {}...".format(save_name))
+                pop.save(save_name)
         pop.next_gen()
 
 

@@ -147,7 +147,7 @@ class Genome:
         self.compute_used_node()
         return self
 
-    def bread(self, other):
+    def breed(self, other):
         self.genotype = [self.genotype[i] if choice([True, False]) else other.genotype[i].clone() for i in range(len(self.genotype))]
         self.compute_used_node()
         return self
@@ -180,19 +180,19 @@ class Population(object):
     genome_config: GenomeConfig
     size: int
     keep: int
-    bread: int
+    breed: int
     muta_count: int
 
-    def __init__(self, genome_config: GenomeConfig, size = 50, keep = 5, bread = None, muta_count = None):
+    def __init__(self, genome_config: GenomeConfig, size = 50, keep = 5, breed = None, muta_count = None):
         self.list_genomes = [Genome(genome_config) for _ in range(size)]
         self.list_scores = [None] * size
         self.genome_config = genome_config
         self.size = size
         self.keep = keep
-        if bread is None:
-            self.bread = (size - keep)//4
+        if breed is None:
+            self.breed = (size - keep)//4
         else:
-            self.bread = bread
+            self.breed = breed
         if muta_count is None:
             self.muta_count = genome_config.node//40
         else:
@@ -207,10 +207,10 @@ class Population(object):
     def next_gen(self):
         zipres = [(self.list_scores[i], self.list_genomes[i]) for i in range(len(self.list_genomes))]
         new_parents = [t for t in sorted(zipres, key=lambda x: x[0])[-self.keep:]][::-1]
-        new_bread = [(None, choice(new_parents)[1].clone().bread(choice(new_parents)[1])) for _ in range(self.bread)]
+        new_breed = [(None, choice(new_parents)[1].clone().breed(choice(new_parents)[1])) for _ in range(self.breed)]
         new_mutated = [(None, choice(new_parents)[1].clone().mutate(self.muta_count)) for _ in
-                       range(self.size - self.keep - self.bread)]
-        new = new_parents + new_bread + new_mutated
+                       range(self.size - self.keep - self.breed)]
+        new = new_parents + new_breed + new_mutated
         self.list_scores = [i[0] for i in new]
         self.list_genomes = [i[1] for i in new]
 

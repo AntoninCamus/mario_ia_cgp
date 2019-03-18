@@ -14,7 +14,7 @@ class EmuEnv:
         observation = self.env.reset()
         total_reward = 0.0
         stuck_score = 0
-        for i in range(500):
+        for i in range(1,10000):
             if render:
                 self.env.render()
             ob_flat = self.processor.process(observation).tolist()
@@ -26,7 +26,7 @@ class EmuEnv:
             stuck_score += reward
             if total_reward < 0:
                 break
-            if i%50 == 49:
+            if i%100 == 0:
                 if stuck_score <= 0:
                     break
                 stuck_score = 0

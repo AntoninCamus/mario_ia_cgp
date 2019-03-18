@@ -21,8 +21,8 @@ class PictureReducer:
     def process(self, screen: [[[]]]) -> []:
         screen = cv2.cvtColor(screen, cv2.COLOR_RGB2BGR)
         screen = cv2.resize(screen, (30, 24))
-        cv2.imshow('main', screen)
-        cv2.waitKey(1)
+        #cv2.imshow('main', screen)
+        #cv2.waitKey(1)
         screen = screen.flatten()
         screen = np.reshape(screen, 30 * 24 * 3)
         return screen
