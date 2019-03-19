@@ -1,7 +1,6 @@
 import json
-from random import randint
 
-from core.cgp_model import Genome, GenomeConfig, Population
+from cgp.cgp_model import Genome, GenomeConfig, Population
 
 
 def deserialize_population(serialized_pop: [], genome_config: GenomeConfig, real_adn=False) -> Population:

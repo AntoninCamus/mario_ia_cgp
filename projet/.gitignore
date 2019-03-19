@@ -3,3 +3,7 @@ __pycache__/
 hostfile
 venv/
 .idea/
+
+build/
+*.so
+*.c

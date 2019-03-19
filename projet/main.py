@@ -2,10 +2,9 @@ import argparse
 import cProfile
 import sys
 
-from core.cgp_model import GenomeConfig, Genome, Population
-from core.emu_env import EmuEnv
-from core.cgp_utilies import *
-from core.picture_processing import *
+from cgp.cgp_utilies import *
+from emu.emu_env import EmuEnv
+from emu.picture_processing import *
 
 # Hyper parameters
 NB_GENS = 10000
