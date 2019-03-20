@@ -3,3 +3,4 @@ numpy
 opencv-python
 gym>=0.12.0
 gym-super-mario-bros>=7.1.6
+cython

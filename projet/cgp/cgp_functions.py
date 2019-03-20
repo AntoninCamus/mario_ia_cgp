@@ -25,7 +25,7 @@ def inv(x):
     try:
         return 1 / x
     except:
-        DEFAULT_RETURN
+        return DEFAULT_RETURN
 
 
 def abs(x):

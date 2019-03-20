@@ -1,28 +1,14 @@
 import json
 from random import randint, choice
+from cgp.cgp_functions import UNARY_FUNCTIONS,BINARY_FUNCTIONS,UNARY_REDUCERS
+
 
 import numpy as np
 
-_binary_func = [
-    lambda x, y: x + y,
-    lambda x, y: x - y,
-    lambda x, y: x * y,
-    lambda x, y: x / y if y != 0 else x
-]
-
-_unary_func = [
-    lambda x: x * 2,
-    lambda x: x + 1,
-]
-
-_unary_reduce_func = [
-    lambda x: x,
-]
-
-_binary_reduce_func = [
-    lambda x,y: x,
-]
-
+_binary_func = BINARY_FUNCTIONS
+_unary_func = UNARY_FUNCTIONS
+_unary_reduce_func = UNARY_REDUCERS
+_binary_reduce_func = []
 
 class GenomeConfig:
     def __init__(self, inp: int, out: int, node=1, binary_func=None, unary_func=None, binary_reduce_func=None, unary_reduce_func=None):
@@ -228,8 +214,8 @@ class UnaryOutputNeurone:
         return res
 
     def mutate(self):
-        if randint(0,100) < 5:
-           return BinaryOutputNeurone(self.conf)
+        #if randint(0,100) < 5:
+        #   return BinaryOutputNeurone(self.conf)
         if randint(0,1):
             self.pred = randint(0, self.conf.inp + self.conf.node - 1)
         else:
@@ -265,7 +251,8 @@ class Genome:
     def __init__(self, genome_config: GenomeConfig):
         self.conf = genome_config
         self.genotype = [BinaryNeurone(genome_config, i) if randint(0,1) else UnaryNeurone(genome_config, i) for i in range(genome_config.node)]
-        self.genotype += [BinaryOutputNeurone(genome_config) if randint(0,1) else UnaryOutputNeurone(genome_config) for _ in range(genome_config.out)]
+        self.genotype += [UnaryOutputNeurone(genome_config) for _ in range(genome_config.out)]
+        #self.genotype += [BinaryOutputNeurone(genome_config) if randint(0,1) else UnaryOutputNeurone(genome_config) for _ in range(genome_config.out)]
         self.used_node = np.empty((), dtype=bool)
         self.compute_used_node()
 
