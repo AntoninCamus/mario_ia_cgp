@@ -43,14 +43,14 @@ class Controller(http.server.BaseHTTPRequestHandler):
 
 
 def get_top(remote: str):
-    res = urllib.request.urlopen("http://" + remote + "/").read().decode("utf-8")
+    res = urllib.request.urlopen("http://" + remote + "/", timeout=5).read().decode("utf-8")
     return res.splitlines()
 
 
 def post_top(remote: str, best):
     conc = [str(i[0]) + " " + i[1] for i in best]
     data = "\n".join(conc)
-    res = urllib.request.urlopen("http://" + remote + "/", bytes(data, "utf-8"))
+    res = urllib.request.urlopen("http://" + remote + "/", bytes(data, "utf-8"), timeout=5)
     res = res.read().decode("utf-8")
     return res.splitlines()
 
