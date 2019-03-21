@@ -1,3 +1,5 @@
+from typing import Union
+
 import numpy as np
 import scipy
 import scipy.stats
@@ -7,105 +9,114 @@ import scipy.stats
 DEFAULT_RETURN = 0
 
 
-def add(x, y):
+def add(x: Union[int, float, np.ndarray], y: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
     return (x + y) / 2
 
 
-def aminus(x, y):
-    return abs(x - y) / 2
+def abs_minus(x: Union[int, float, np.ndarray], y: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
+    return abs_x(x - y) / 2
 
 
-def mult(x, y):
+def multiply(x: Union[int, float, np.ndarray], y: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
     return x * y
 
-# def cmult(x):
+
+# def cmult(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray:
 #    NotImplemented
 
-def inv(x):
+def inv(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
     try:
         return 1 / x
-    except:
+    except ZeroDivisionError:
         return DEFAULT_RETURN
 
 
-def abs(x):
+def abs_x(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
     return np.abs(x)
 
 
-def sqrt(x):
+def sqrt(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
     return np.sqrt(x)
 
-# def xpow(x):
+
+# def xpow(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray:
 #    NotImplemented
 
-def xpowy(x, y):
+def x_pow_y(x: Union[int, float, np.ndarray], y: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
     return np.power(x, y)
 
 
-def expx(x):
+def exp_x(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
     return (np.exp(x) - 1) / (np.exp(1) - 1)
 
 
-def sinx(x):
+def sin_x(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
     return np.sin(x)
 
 
-def cosx(x):
+def cos_x(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
     return np.cos(x)
 
 
-def sqrtxy(x, y):
+def sqrt_xy(x: Union[int, float, np.ndarray], y: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
     return np.sqrt(np.power(x, 2) + np.power(y, 2)) / np.sqrt(2)
 
 
-def stddev(x):
+def stddev(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
     return np.std(x)
 
 
-def skew(x):
+def skew(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
     return scipy.stats.skew(x)
 
 
-def kurtosis(x):
+def kurtosis(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
     return scipy.stats.kurtosis(x)
 
 
-def mean(x):
+def mean(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
     return np.mean(x)
 
 
-def range(x):
+def range_x(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
     return np.max(x) - np.min(x) - 1
 
 
-def round(x):
+def round_x(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
     return np.round(x)
 
-def ceil(x):
+
+def ceil(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
     return np.ceil(x)
 
-def floor(x):
+
+def floor(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
     return np.floor(x)
 
-def max1(x):
+
+def max1(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
     return np.max(x)
 
-def min1(x):
+
+def min1(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
     return np.min(x)
 
-def max2(x, y):
+
+def max2(x: Union[int, float, np.ndarray], y: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
     try:
         return max(x, y)
     except ValueError:
         return DEFAULT_RETURN
 
-def min2(x, y):
+
+def min2(x: Union[int, float, np.ndarray], y: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
     try:
         return min(x, y)
     except ValueError:
         return DEFAULT_RETURN
 
-def split_before(input_data: np.ndarray) -> np.ndarray:
+
+def split_before(input_data: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
     if isinstance(input_data, np.ndarray):
         tmp = np.array_split(input_data, 2)[0]
         zeros = np.zeros(len(input_data) - len(tmp))
@@ -113,7 +124,8 @@ def split_before(input_data: np.ndarray) -> np.ndarray:
     else:
         return DEFAULT_RETURN
 
-def split_after(input_data: np.ndarray) -> np.ndarray:
+
+def split_after(input_data: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
     if isinstance(input_data, np.ndarray):
         tmp = np.array_split(input_data, 2)[1]
         zeros = np.zeros(len(input_data) - len(tmp))
@@ -121,7 +133,9 @@ def split_after(input_data: np.ndarray) -> np.ndarray:
     else:
         return DEFAULT_RETURN
 
-# def range_in(input_data: np.ndarray, scalar: np.ndarray) -> np.ndarray:
+
+# def range_in(input_data: Union[int, float, np.ndarray], scalar: Union[int, float, np.ndarray]) \
+#         -> Union[int, float, np.ndarray]:
 #     if isinstance(input_data, np.ndarray) and isinstance(scalar, int):
 #         tmp = np.split(input_data, cut)
 #         if scalar[0] < cut:
@@ -132,7 +146,7 @@ def split_after(input_data: np.ndarray) -> np.ndarray:
 #         return DEFAULT_RETURN
 
 
-def index_y(x, y):
+def index_y(x: Union[int, float, np.ndarray], y: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
     try:
         return x[y]
     except TypeError:
@@ -140,62 +154,67 @@ def index_y(x, y):
     except IndexError:
         return DEFAULT_RETURN
 
-# def vectorize(x):
+
+# def vectorize(x : Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
 #    NotImplemented
 
-def first(x):
+def first(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
     try:
         return x[0]
     except TypeError:
         return DEFAULT_RETURN
 
-def last(x):
+
+def last(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
     try:
         return x[-1]
     except TypeError:
         return DEFAULT_RETURN
 
-# def differences(x):
+
+# def differences(x : Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
 #     try:
 #         return np.diff(x)
 #     except np.AxisError:
 #         return DEFAULT_RETURN
 #
 #
-# def avg_differences(x):
+# def avg_differences(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
 #     return np.mean(differences(x))
 
 
-def rotate(x, y):
+def rotate(x: Union[int, float, np.ndarray], y: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
     return np.roll(x, y)
 
-# def push_back(x, y):
+
+# def push_back(x : Union[int, float, np.ndarray], y : Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
 #     return np.append(x, y)
 
 
-# def set(x, y):
+# def set(x : Union[int, float, np.ndarray], y : Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
 #    return [x] * len(y)
 
-def sum(x):
+def sum_x(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
     return np.sum(x)
 
-# def transpose(x):
+
+# def transpose(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
 #    return np.transpose(x)
 
-# def vecfromdouble(x):
+# def vecfromdouble(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
 #    if isinstance(x, np.ndarray):
 #        return DEFAULT_RETURN
 #    else:
 #        return np.array([x])
 
-def constvector1(x):
+def const_vector_1(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
     if isinstance(x, np.ndarray):
         return np.array([1] * len(x))
     else:
         return np.array([1] * x)
 
 
-def constvector0(x):
+def const_vector_0(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
     if isinstance(x, np.ndarray):
         return np.zeros(len(x))
     else:
@@ -204,37 +223,37 @@ def constvector0(x):
 
 UNARY_FUNCTIONS = [
     inv,
-    abs,
+    abs_x,
     sqrt,
-    expx,
-    sinx,
-    cosx,
+    exp_x,
+    sin_x,
+    cos_x,
     stddev,
     skew,
     kurtosis,
     mean,
-    range,
-    round,
+    range_x,
+    round_x,
     ceil,
     floor,
     max1,
     min1,
     first,
     last,
-    sum,
-    constvector0,
-    constvector1,
+    sum_x,
+    const_vector_0,
+    const_vector_1,
     split_before,
     split_after,
-    sum
+    sum_x
 ]
 
 BINARY_FUNCTIONS = [
     add,
-    aminus,
-    mult,
-    xpowy,
-    sqrtxy,
+    abs_minus,
+    multiply,
+    x_pow_y,
+    sqrt_xy,
     max2,
     min2,
     index_y,
@@ -246,6 +265,6 @@ UNARY_REDUCERS = [
     min1,
     mean,
     stddev,
-    range,
-    sum
+    range_x,
+    sum_x
 ]

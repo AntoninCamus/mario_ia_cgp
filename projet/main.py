@@ -2,11 +2,11 @@ import argparse
 import cProfile
 import sys
 
-from cgp.cgp_utilies import *
+import cgp.cgp_utilies
+import emu.picture_processing
 from distributed import controller
 from distributed.controller import post_top
 from emu.emu_env import EmuEnv
-from emu.picture_processing import *
 
 # Hyper parameters
 NB_GENS = 10000
@@ -22,7 +22,7 @@ KEEP = 5
 # Program parameters
 debug = False
 render = False
-image_processor = PictureReducer()
+image_processor = emu.picture_processing.PictureReducer()
 
 
 def learn(mpi_comm=None, save_name=None, host_name=None):
@@ -31,12 +31,12 @@ def learn(mpi_comm=None, save_name=None, host_name=None):
     else:
         rank = 0
 
-    cfg = GenomeConfig(image_processor.get_dim(), 7, GENOME_SIZE)
+    cfg = cgp.cgp_utilies.GenomeConfig(image_processor.get_dim(), 7, GENOME_SIZE)
 
     if save_name is None:
-        pop = Population(cfg, POP_SIZE, KEEP)
+        pop = cgp.cgp_utilies.Population(cfg, POP_SIZE, KEEP)
     else:
-        pop = load_population(cfg, save_name)
+        pop = cgp.cgp_utilies.load_population(cfg, save_name)
         pop.size = POP_SIZE
         pop.keep = KEEP
         pop.next_gen()
@@ -56,12 +56,14 @@ def learn(mpi_comm=None, save_name=None, host_name=None):
         # All Gathering :
         if i % SAVE_EVERY == 0:
             if host_name:
-                pop = deserialize_population(post_top(host_name, json.dumps(pop.serialize())), pop.genome_config)
+                pop = cgp.cgp_utilies.deserialize_population(
+                    post_top(host_name, cgp.cgp_utilies.json.dumps(pop.serialize())), pop.genome_config)
                 if debug:
                     print("Saving on server {}, new state is {}...".format(host_name, pop))
             elif mpi_comm:
-                shared = [deserialize_population(p, pop.genome_config) for p in mpi_comm.allgather(pop.serialize())]
-                merge_populations(pop, shared)
+                shared = [cgp.cgp_utilies.deserialize_population(p, pop.genome_config) for p in
+                          mpi_comm.allgather(pop.serialize())]
+                cgp.cgp_utilies.merge_populations(pop, shared)
 
             if rank == 0:
                 save_name = "save_" + str(i)
@@ -73,8 +75,8 @@ def learn(mpi_comm=None, save_name=None, host_name=None):
 
 def profile_run():
     for i in range(2):
-        cfg = GenomeConfig(image_processor.get_dim(), 7, 1000)
-        pop = Population(cfg, 10)
+        cfg = cgp.cgp_utilies.GenomeConfig(image_processor.get_dim(), 7, 1000)
+        pop = cgp.cgp_utilies.Population(cfg, 10)
         EmuEnv.make_them_play(pop, image_processor, render=render)
         pop.next_gen()
 

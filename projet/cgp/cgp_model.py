@@ -1,17 +1,19 @@
 import json
 from random import randint, choice
-from cgp.cgp_functions import UNARY_FUNCTIONS,BINARY_FUNCTIONS,UNARY_REDUCERS
-
 
 import numpy as np
+
+from cgp.cgp_functions import UNARY_FUNCTIONS, BINARY_FUNCTIONS, UNARY_REDUCERS
 
 _binary_func = BINARY_FUNCTIONS
 _unary_func = UNARY_FUNCTIONS
 _unary_reduce_func = UNARY_REDUCERS
 _binary_reduce_func = []
 
+
 class GenomeConfig:
-    def __init__(self, inp: int, out: int, node=1, binary_func=None, unary_func=None, binary_reduce_func=None, unary_reduce_func=None):
+    def __init__(self, inp: int, out: int, node=1, binary_func=None, unary_func=None, binary_reduce_func=None,
+                 unary_reduce_func=None):
         if binary_func is None:
             binary_func = _binary_func
         if unary_func is None:
@@ -50,8 +52,8 @@ class BinaryNeurone:
         return res
 
     def mutate(self):
-        if randint(0,100) < 5:
-           return UnaryNeurone(self.conf, self.node_id)
+        if randint(0, 100) < 5:
+            return UnaryNeurone(self.conf, self.node_id)
         rand = randint(0, 2)
         if rand == 0:
             self.pred1 = randint(0, self.conf.inp + self.node_id - 1)
@@ -63,7 +65,6 @@ class BinaryNeurone:
 
     def preds(self) -> [int]:
         return [self.pred1, self.pred2]
-
 
     def to_dict(self) -> dict:
         return {
@@ -107,9 +108,9 @@ class UnaryNeurone:
         return res
 
     def mutate(self):
-        if randint(0,100) < 5:
-           return BinaryNeurone(self.conf, self.node_id)
-        if randint(0,1):
+        if randint(0, 100) < 5:
+            return BinaryNeurone(self.conf, self.node_id)
+        if randint(0, 1):
             self.pred = randint(0, self.conf.inp + self.node_id - 1)
         else:
             self.func = randint(0, len(self.conf.unary_func) - 1)
@@ -140,6 +141,7 @@ class UnaryNeurone:
         res.func = d["func"]
         return res
 
+
 class BinaryOutputNeurone:
     def __init__(self, genome_config: GenomeConfig):
         self.conf = genome_config
@@ -160,9 +162,9 @@ class BinaryOutputNeurone:
         return res
 
     def mutate(self):
-        if randint(0,100) < 5:
-           return UnaryOutputNeurone(self.conf)
-        i = randint(0,2)
+        if randint(0, 100) < 5:
+            return UnaryOutputNeurone(self.conf)
+        i = randint(0, 2)
         if i == 0:
             self.pred1 = randint(0, self.conf.inp + self.conf.node - 1)
         elif i == 1:
@@ -214,9 +216,9 @@ class UnaryOutputNeurone:
         return res
 
     def mutate(self):
-        #if randint(0,100) < 5:
+        # if randint(0,100) < 5:
         #   return BinaryOutputNeurone(self.conf)
-        if randint(0,1):
+        if randint(0, 1):
             self.pred = randint(0, self.conf.inp + self.conf.node - 1)
         else:
             self.func = randint(0, len(self.conf.unary_reduce_func) - 1)
@@ -250,9 +252,11 @@ class UnaryOutputNeurone:
 class Genome:
     def __init__(self, genome_config: GenomeConfig):
         self.conf = genome_config
-        self.genotype = [BinaryNeurone(genome_config, i) if randint(0,1) else UnaryNeurone(genome_config, i) for i in range(genome_config.node)]
+        self.genotype = [BinaryNeurone(genome_config, i) if randint(0, 1) else UnaryNeurone(genome_config, i) for i in
+                         range(genome_config.node)]
         self.genotype += [UnaryOutputNeurone(genome_config) for _ in range(genome_config.out)]
-        #self.genotype += [BinaryOutputNeurone(genome_config) if randint(0,1) else UnaryOutputNeurone(genome_config) for _ in range(genome_config.out)]
+        # self.genotype += [BinaryOutputNeurone(genome_config) if randint(0, 1) else UnaryOutputNeurone(genome_config)
+        #                  for _ in range(genome_config.out)]
         self.used_node = np.empty((), dtype=bool)
         self.compute_used_node()
 
@@ -262,8 +266,8 @@ class Genome:
             if type(self.genotype[i]) is BinaryOutputNeurone or type(self.genotype[i]) is UnaryOutputNeurone:
                 self.used_node[i + self.conf.inp] = True
             if self.used_node[i + self.conf.inp]:
-                for i in self.genotype[i].preds():
-                    self.used_node[i] = True
+                for pred_idx in self.genotype[i].preds():
+                    self.used_node[pred_idx] = True
 
     def evaluate(self, inp: [[]]) -> []:
         res = list(inp) + [None] * self.conf.node
@@ -291,7 +295,8 @@ class Genome:
         return self
 
     def breed(self, other):
-        self.genotype = [self.genotype[i] if choice([True, False]) else other.genotype[i].clone() for i in range(len(self.genotype))]
+        self.genotype = [self.genotype[i] if choice([True, False]) else other.genotype[i].clone() for i in
+                         range(len(self.genotype))]
         self.compute_used_node()
         return self
 
@@ -306,48 +311,41 @@ class Genome:
                 return False
         return True
 
-
     @staticmethod
     def from_list_of_dict(l: list, gc: GenomeConfig):
         res = Genome(gc)
-        neuroneTypes = [UnaryNeurone, BinaryNeurone, UnaryOutputNeurone, BinaryOutputNeurone]
-        def notNone(x):
-            for i in x:
-                    if i is not None:
-                        return i
+        neurone_types = [UnaryNeurone, BinaryNeurone, UnaryOutputNeurone, BinaryOutputNeurone]
 
-        res.genotype = [notNone([Neurone.from_dict(node, gc) for Neurone in neuroneTypes])
+        def not_none(x):
+            for i in x:
+                if i is not None:
+                    return i
+
+        res.genotype = [not_none([Neurone.from_dict(node, gc) for Neurone in neurone_types])
                         for node in l]
         res.compute_used_node()
         return res
 
 
 class Population(object):
-    list_genomes: [Genome] = []
-    list_score: [] = []
-    genome_config: GenomeConfig
-    size: int
-    keep: int
-    breed: int
-    muta_count: int
 
-    def __init__(self, genome_config: GenomeConfig, size = 50, keep = 5, breed = None, muta_count = None):
+    def __init__(self, genome_config: GenomeConfig, size=50, keep=5, breed=None, muta_count=None):
         self.list_genomes = [Genome(genome_config) for _ in range(size)]
         self.list_scores = [None] * size
         self.genome_config = genome_config
         self.size = size
         self.keep = keep
         if breed is None:
-            self.breed = (size - keep)//4
+            self.breed = (size - keep) // 4
         else:
             self.breed = breed
         if muta_count is None:
-            self.muta_count = genome_config.node//40
+            self.muta_count = genome_config.node // 40
         else:
             self.muta_count = muta_count
 
     def keep_bests(self):
-        zipres = [(self.list_scores[i],self.list_genomes[i]) for i in range(len(self.list_genomes))]
+        zipres = [(self.list_scores[i], self.list_genomes[i]) for i in range(len(self.list_genomes))]
         bests = [t for t in sorted(zipres, key=lambda x: x[0])[-self.keep:]][::-1]
         self.list_scores = [i[0] for i in bests]
         self.list_genomes = [i[1] for i in bests]

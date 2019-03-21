@@ -15,19 +15,19 @@ class EmuEnv:
         observation = self.env.reset()
         total_reward = 0.0
         stuck_score = 0
-        for i in range(1,10000):
+        for i in range(1, 10000):
             if render:
                 self.env.render()
             ob_flat = self.processor.process(observation).tolist()
             decision = g.evaluate(ob_flat)
-            action = decision.argmax()  # TODO Optimize function by using np.array and optimize picture
+            action = decision.argmax()
             # action = self.env.action_space.sample()
             observation, reward, done, info = self.env.step(action)
             total_reward += reward
             stuck_score += reward
             if total_reward < 0:
                 break
-            if i%100 == 0:
+            if i % 100 == 0:
                 if stuck_score <= 0:
                     break
                 stuck_score = 0

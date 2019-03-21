@@ -12,9 +12,9 @@ class Controller(http.server.BaseHTTPRequestHandler):
     def __init__(self, a, b, c):
         http.server.BaseHTTPRequestHandler.__init__(self, a, b, c)
 
-    def do_POST(s):
+    def do_POST(self):
         """Respond to a GET request."""
-        received = s.rfile.read1().decode("utf-8")
+        received = self.rfile.read1().decode("utf-8")
         for l in received.splitlines():
             [val, gen] = l.split(" ")
             val = int(val)
@@ -32,16 +32,16 @@ class Controller(http.server.BaseHTTPRequestHandler):
                     print(g)
                 print("")
 
-        s.do_GET()
+        self.do_GET()
 
-    def do_GET(s):
+    def do_GET(self):
         """Respond to a GET request."""
-        s.send_response(200)
-        s.send_header("Content-type", "application/octet-stream")
-        s.end_headers()
+        self.send_response(200)
+        self.send_header("Content-type", "application/octet-stream")
+        self.end_headers()
         for i in range(len(genotype)):
-            s.wfile.write(bytes(genotype[i], "utf-8"))
-            s.wfile.write(b"\n")
+            self.wfile.write(bytes(genotype[i], "utf-8"))
+            self.wfile.write(b"\n")
 
 
 def get_top(remote: str):

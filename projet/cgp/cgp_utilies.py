@@ -18,6 +18,7 @@ def deserialize_population(serialized_pop: [], genome_config: GenomeConfig, real
     pop.list_scores = scores
     return pop
 
+
 def merge_populations(pop: Population, pops: [Population]):
     lg = pop.list_genomes
     ls = pop.list_scores
@@ -39,6 +40,7 @@ def merge_populations(pop: Population, pops: [Population]):
             filtered_s.append(ls[i])
     pop.list_genomes = filtered_g
     pop.list_scores = filtered_s
+
 
 def load_population(genome_config: GenomeConfig, save_name: str, save_dir="./saves/", real_adn=False):
     with open("{}{}.json".format(save_dir, save_name), "r") as infile:

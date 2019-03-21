@@ -1,3 +1,4 @@
+scipy
 mpi4py
 numpy
 opencv-python
