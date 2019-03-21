@@ -3,6 +3,8 @@ import cProfile
 import sys
 
 from cgp.cgp_utilies import *
+from distributed import controller
+from distributed.controller import post_top
 from emu.emu_env import EmuEnv
 from emu.picture_processing import *
 
@@ -23,36 +25,11 @@ render = False
 image_processor = PictureReducer()
 
 
-def learn(save_name=None):
-    cfg = GenomeConfig(image_processor.get_dim(), 7, GENOME_SIZE)
-
-    if save_name is None:
-        pop = Population(cfg, POP_SIZE, KEEP, BREED, MUTA)
+def learn(mpi_comm=None, save_name=None, host_name=None):
+    if mpi_comm:
+        rank = mpi_comm.Get_rank()
     else:
-        pop = load_population(cfg, save_name)
-        pop.size = POP_SIZE
-        pop.keep = KEEP
-        pop.next_gen()
-
-    for i in range(1, NB_GENS):
-        if debug:
-            print("Testing generation {} : {}...".format(i, pop))
-        else:
-            print("Testing generation {} ...".format(i))
-        EmuEnv.make_them_play(pop, image_processor, keep=KEEP, render=render, debug=debug)
-        pop.keep_bests()
-        if debug:
-            print("Best scores were {}...".format(pop.list_scores[:5]))
-        if i % SAVE_EVERY == 0:
-            save_name = "save_" + str(i)
-            if debug:
-                print("Saving in {}...".format(save_name))
-            pop.save(save_name)
-        pop.next_gen()
-
-
-def learn_mpi(comm, save_name=None):
-    rank = comm.Get_rank()
+        rank = 0
 
     cfg = GenomeConfig(image_processor.get_dim(), 7, GENOME_SIZE)
 
@@ -65,22 +42,27 @@ def learn_mpi(comm, save_name=None):
         pop.next_gen()
 
     for i in range(1, NB_GENS):
-        if rank == 0:
-            if debug:
-                print("Testing generation {} : {}...".format(i, pop))
-            else:
-                print("Testing generation {} ...".format(i))
-        if debug:
-            print("Testing generation {} on worker {} : {}...".format(i, rank, pop))
-        EmuEnv.make_them_play(pop, image_processor, keep=KEEP, render=render, debug=debug)
+        if mpi_comm and debug:
+            print("Testing generation {} on worker {}...".format(i, rank))
+        else:
+            if rank == 0:
+                print("Testing generation {}...".format(i))
+
+        EmuEnv.make_them_play(pop, image_processor, render=render, debug=debug)
         pop.keep_bests()
-        if debug:
-            print("Best scores were {}...".format(pop.list_scores[:5]))
-        
+
+        print("Best scores were {}...".format(pop.list_scores[:5]))
+
         # All Gathering :
         if i % SAVE_EVERY == 0:
-            shared = [deserialize_population(p, pop.genome_config) for p in comm.allgather(pop.serialize())]
-            merge_populations(pop, shared)
+            if host_name:
+                pop = deserialize_population(post_top(host_name, json.dumps(pop.serialize())), pop.genome_config)
+                if debug:
+                    print("Saving on server {}, new state is {}...".format(host_name, pop))
+            elif mpi_comm:
+                shared = [deserialize_population(p, pop.genome_config) for p in mpi_comm.allgather(pop.serialize())]
+                merge_populations(pop, shared)
+
             if rank == 0:
                 save_name = "save_" + str(i)
                 if debug:
@@ -104,6 +86,7 @@ def profile():
 def main():
     parser = argparse.ArgumentParser(description='Cartesian Genetic Program playing Mario Bros :3')
     parser.add_argument("-l", "--load", help="Charge une sauvegarde")
+    parser.add_argument("-c", "--collector", help="Indique l'ip du serveur de partage")
     parser.add_argument("-m", "--mpi", help="Se lance en distribué MPI, incompatible avec le profiling",
                         action="store_true")
     parser.add_argument("-d", "--debug", help="Affiche les textes de débogage", action="store_true")
@@ -119,26 +102,37 @@ def main():
         print("Rendering activated")
         global render
         render = True
+
     if args.load:
         print("Loading save {}".format(args.load))
         save_name = args.load
     else:
         save_name = None
 
+    if args.collector:
+        print("Using host : {}".format(args.collector))
+        collector_ip = args.collector
+        print("Actual state of server is : {}".format(controller.get_top(collector_ip)))
+    else:
+        collector_ip = None
+
+    if args.mpi:
+        from mpi4py import MPI
+        comm = MPI.COMM_WORLD
+    else:
+        comm = None
+
     if args.profile:
         print("Starting profiling")
         profile()
         sys.exit()
-    elif args.mpi:
-        from mpi4py import MPI
-        comm = MPI.COMM_WORLD
-        if comm.Get_rank() == 0:
-            print("Starting learning with MPI")
-        learn_mpi(comm, save_name)
-        sys.exit()
     else:
-        print("Starting learning")
-        learn(save_name)
+        if not comm:
+            print("Starting learning")
+        elif comm.Get_rank() == 0:
+            print("Starting learning with MPI")
+
+        learn(comm, save_name=save_name, host_name=collector_ip)
         sys.exit()
 
 

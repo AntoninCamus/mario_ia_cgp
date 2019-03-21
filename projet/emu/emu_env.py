@@ -36,7 +36,7 @@ class EmuEnv:
         return total_reward
 
     @staticmethod
-    def make_them_play(p: Population, processor, keep=5, render=False, debug=False):
+    def make_them_play(p: Population, processor, render=False, debug=False):
         e = EmuEnv(processor)
         for i in range(len(p.list_genomes)):
             if p.list_scores[i] is None:

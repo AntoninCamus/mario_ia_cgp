@@ -5,6 +5,8 @@ keep = 5
 genotype = list()
 score = list()
 
+PORT = 8888
+
 
 class Controller(http.server.BaseHTTPRequestHandler):
     def __init__(self, a, b, c):
@@ -50,15 +52,13 @@ def get_top(remote: str):
 def post_top(remote: str, best):
     conc = [str(i[0]) + " " + i[1] for i in best]
     data = "\n".join(conc)
-    res = urllib.request.urlopen("http://" + remote + "/", bytes(data, "utf-8"), timeout=5)
+    res = urllib.request.urlopen("http://{}:{}/".format(remote, PORT), bytes(data, "utf-8"), timeout=5)
     res = res.read().decode("utf-8")
     return res.splitlines()
 
 
 if __name__ == "__main__":
-    PORT = 8888
     server_address = ("", PORT)
-
     server = http.server.HTTPServer
     handler = Controller
     httpd = server(server_address, handler)
