@@ -6,7 +6,7 @@ import scipy.stats
 
 # Toute fonction prends et renvoie des scalaires np.array([x] * N) ou des array np.array([...], N)
 
-DEFAULT_RETURN = 0
+DEFAULT_RETURN = np.float(0)
 
 
 def add(x: Union[int, float, np.ndarray], y: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
@@ -62,8 +62,8 @@ def sqrt_xy(x: Union[int, float, np.ndarray], y: Union[int, float, np.ndarray]) 
     return np.sqrt(np.power(x, 2) + np.power(y, 2)) / np.sqrt(2)
 
 
-def stddev(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
-    return np.std(x)
+def stddev(x: Union[int, float, np.ndarray]) -> np.float:
+    return np.float(np.std(x))
 
 
 def skew(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
@@ -74,12 +74,15 @@ def kurtosis(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
     return scipy.stats.kurtosis(x)
 
 
-def mean(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
-    return np.mean(x)
+def mean(x: Union[int, float, np.ndarray]) -> np.float:
+    return np.float(np.mean(x))
 
 
-def range_x(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
-    return np.max(x) - np.min(x) - 1
+def range_x(x: Union[int, float, np.ndarray]) -> np.float:
+    if isinstance(x, np.ndarray) and x.size == 0:
+        return DEFAULT_RETURN
+    else:
+        return np.float(np.max(x) - np.min(x))
 
 
 def round_x(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
@@ -94,12 +97,18 @@ def floor(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
     return np.floor(x)
 
 
-def max1(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
-    return np.max(x)
+def max1(x: Union[int, float, np.ndarray]) -> np.float:
+    if isinstance(x, np.ndarray) and x.size == 0:
+        return DEFAULT_RETURN
+    else:
+        return np.float(np.max(x))
 
 
-def min1(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
-    return np.min(x)
+def min1(x: Union[int, float, np.ndarray]) -> np.float:
+    if isinstance(x, np.ndarray) and x.size == 0:
+        return DEFAULT_RETURN
+    else:
+        return np.float(np.min(x))
 
 
 def max2(x: Union[int, float, np.ndarray], y: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
@@ -116,19 +125,19 @@ def min2(x: Union[int, float, np.ndarray], y: Union[int, float, np.ndarray]) -> 
         return DEFAULT_RETURN
 
 
-def split_before(input_data: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
-    if isinstance(input_data, np.ndarray):
-        tmp = np.array_split(input_data, 2)[0]
-        zeros = np.zeros(len(input_data) - len(tmp))
+def split_before(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
+    if isinstance(x, np.ndarray) and x.size > 1:
+        tmp = np.array_split(x, 2)[0]
+        zeros = np.zeros(x.size - tmp.size)
         return np.append(tmp, zeros)
     else:
         return DEFAULT_RETURN
 
 
-def split_after(input_data: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
-    if isinstance(input_data, np.ndarray):
-        tmp = np.array_split(input_data, 2)[1]
-        zeros = np.zeros(len(input_data) - len(tmp))
+def split_after(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
+    if isinstance(x, np.ndarray) and x.size > 1:
+        tmp = np.array_split(x, 2)[1]
+        zeros = np.zeros(x.size - tmp.size)
         return np.append(tmp, zeros)
     else:
         return DEFAULT_RETURN
@@ -159,16 +168,16 @@ def index_y(x: Union[int, float, np.ndarray], y: Union[int, float, np.ndarray]) 
 #    NotImplemented
 
 def first(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
-    try:
+    if (isinstance(x, np.ndarray) and x.size > 1):
         return x[0]
-    except TypeError:
+    else:
         return DEFAULT_RETURN
 
 
 def last(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
-    try:
+    if (isinstance(x, np.ndarray) and x.size > 1):
         return x[-1]
-    except TypeError:
+    else:
         return DEFAULT_RETURN
 
 
@@ -184,7 +193,10 @@ def last(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
 
 
 def rotate(x: Union[int, float, np.ndarray], y: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
-    return np.roll(x, y)
+    if(isinstance(y, np.ndarray)):
+        return np.roll(x, np.mean(y))
+    else:
+        return np.roll(x, y)
 
 
 # def push_back(x : Union[int, float, np.ndarray], y : Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
@@ -194,8 +206,8 @@ def rotate(x: Union[int, float, np.ndarray], y: Union[int, float, np.ndarray]) -
 # def set(x : Union[int, float, np.ndarray], y : Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
 #    return [x] * len(y)
 
-def sum_x(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
-    return np.sum(x)
+def sum_x(x: Union[int, float, np.ndarray]) -> np.float:
+    return np.float(np.sum(x))
 
 
 # def transpose(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
@@ -209,16 +221,16 @@ def sum_x(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
 
 def const_vector_1(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
     if isinstance(x, np.ndarray):
-        return np.array([1] * len(x))
+        return np.array([1] * x.size)
     else:
-        return np.array([1] * x)
+        return np.array([1] * np.int64(np.round(x)))
 
 
 def const_vector_0(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
     if isinstance(x, np.ndarray):
-        return np.zeros(len(x))
+        return np.zeros(x.size)
     else:
-        return np.zeros(x)
+        return np.zeros(np.int64(np.round(x)))
 
 
 UNARY_FUNCTIONS = [
