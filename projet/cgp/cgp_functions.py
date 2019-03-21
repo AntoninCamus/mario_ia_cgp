@@ -18,16 +18,37 @@ def abs_minus(x: Union[int, float, np.ndarray], y: Union[int, float, np.ndarray]
 
 
 def multiply(x: Union[int, float, np.ndarray], y: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
-    return x * y
+    return x * y / 2
+
+
+def divide(x: Union[int, float, np.ndarray], y: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
+    if isinstance(y, np.ndarray) and y.size > 1:
+        if (y[:] != 0).all():
+            return x / y
+        elif (y[:] != 0).any():
+            return x / np.mean(y)
+        else:
+            return DEFAULT_RETURN
+    elif y != 0:
+        return x / y
+    else:
+        return DEFAULT_RETURN
 
 
 # def cmult(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray:
 #    NotImplemented
 
 def inv(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
-    try:
+    if isinstance(x, np.ndarray) and x.size > 1:
+        if (x[:] != 0).all():
+            return 1 / x
+        elif (x[:] != 0).any():
+            return 1 / np.mean(x)
+        else:
+            return DEFAULT_RETURN
+    elif x != 0:
         return 1 / x
-    except ZeroDivisionError:
+    else:
         return DEFAULT_RETURN
 
 
@@ -36,14 +57,24 @@ def abs_x(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
 
 
 def sqrt(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
-    return np.sqrt(x)
+    return np.sqrt(np.abs(x))
 
 
 # def xpow(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray:
 #    NotImplemented
 
 def x_pow_y(x: Union[int, float, np.ndarray], y: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
-    return np.power(x, y)
+    if isinstance(y, np.ndarray) and y.size > 1:
+        if (y[:] > 0).all():
+            return np.power(x, y)
+        elif (y[:] > 0).any():
+            return np.power(x, np.max(y))
+        else:
+            return DEFAULT_RETURN
+    elif y < 0:
+        return DEFAULT_RETURN
+    else:
+        return np.power(x, y)
 
 
 def exp_x(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
@@ -175,7 +206,7 @@ def first(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
 
 
 def last(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
-    if (isinstance(x, np.ndarray) and x.size > 1):
+    if isinstance(x, np.ndarray) and x.size > 1:
         return x[-1]
     else:
         return DEFAULT_RETURN
@@ -193,10 +224,10 @@ def last(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
 
 
 def rotate(x: Union[int, float, np.ndarray], y: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
-    if(isinstance(y, np.ndarray)):
-        return np.roll(x, np.mean(y))
+    if (isinstance(y, np.ndarray)):
+        return np.roll(x, np.int(np.mean(y)))
     else:
-        return np.roll(x, y)
+        return np.roll(x, np.int(y))
 
 
 # def push_back(x : Union[int, float, np.ndarray], y : Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
@@ -219,25 +250,25 @@ def sum_x(x: Union[int, float, np.ndarray]) -> np.float:
 #    else:
 #        return np.array([x])
 
-def const_vector_1(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
+def const_1(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
     if isinstance(x, np.ndarray):
         return np.array([1] * x.size)
     else:
-        return np.array([1] * np.int64(np.round(x)))
+        return DEFAULT_RETURN
 
 
-def const_vector_0(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
+def const_0(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
     if isinstance(x, np.ndarray):
         return np.zeros(x.size)
     else:
-        return np.zeros(np.int64(np.round(x)))
+        return DEFAULT_RETURN
 
 
 UNARY_FUNCTIONS = [
     inv,
     abs_x,
     sqrt,
-    exp_x,
+#    exp_x,
     sin_x,
     cos_x,
     stddev,
@@ -253,8 +284,8 @@ UNARY_FUNCTIONS = [
     first,
     last,
     sum_x,
-    const_vector_0,
-    const_vector_1,
+    const_0,
+    const_1,
     split_before,
     split_after,
     sum_x
@@ -264,7 +295,8 @@ BINARY_FUNCTIONS = [
     add,
     abs_minus,
     multiply,
-    x_pow_y,
+    divide,
+#    x_pow_y,
     sqrt_xy,
     max2,
     min2,

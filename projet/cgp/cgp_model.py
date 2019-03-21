@@ -274,7 +274,19 @@ class Genome:
         res[:self.conf.inp] = inp
         for i in range(self.conf.inp, self.conf.inp + self.conf.node):
             if self.used_node[i]:
-                res[i] = self.genotype[i - self.conf.inp].evaluate(res)
+                try:
+                    res[i] = self.genotype[i - self.conf.inp].evaluate(res)
+                    if np.isnan(res[i]).any() or np.isinf(res[i]).any():
+                        raise ArithmeticError
+                except Exception as e:
+                    print("Error", e, "with node", self.genotype[i - self.conf.inp],
+                          self.genotype[i - self.conf.inp].func
+                          , "output is", res[i])
+                    res[i] = 1
+                    for j in self.genotype[i - self.conf.inp].preds():
+                        print("input", self.genotype[j - self.conf.inp], self.genotype[j - self.conf.inp].func,
+                              "with value", res[j])
+
         return np.array([self.genotype[i].evaluate(res) for i in range(self.conf.node, self.conf.node + self.conf.out)])
 
     def clone(self):
@@ -360,11 +372,14 @@ class Population(object):
         self.list_scores = [i[0] for i in new]
         self.list_genomes = [i[1] for i in new]
 
-    def serialize(self) -> []:
+    def to_list(self) -> [float, dict]:
         tmp_list = []
         for i in range(len(self.list_genomes)):
             tmp_list.append((self.list_scores[i], self.list_genomes[i].to_list_of_dict()))
         return tmp_list
+
+    def serialize(self) -> [float, str]:
+        return [(e[0], json.dumps(e[1])) for e in self.to_list()]
 
     def save(self, save_name: str, save_dir="./saves/") -> None:
         with open("{}{}.json".format(save_dir, save_name), "w+") as outfile:

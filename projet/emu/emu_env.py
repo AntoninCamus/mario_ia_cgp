@@ -7,7 +7,7 @@ from cgp.cgp_model import Population, Genome
 
 class EmuEnv:
     def __init__(self, processor):
-        self.env = gym_super_mario_bros.make('SuperMarioBros-2-1-v3')
+        self.env = gym_super_mario_bros.make('SuperMarioBros-2-1-v2')
         self.env = BinarySpaceToDiscreteSpaceEnv(self.env, SIMPLE_MOVEMENT)
         self.processor = processor
 
@@ -18,7 +18,7 @@ class EmuEnv:
         for i in range(1, 10000):
             if render:
                 self.env.render()
-            ob_flat = self.processor.process(observation).tolist()
+            ob_flat = self.processor.process(observation)
             decision = g.evaluate(ob_flat)
             action = decision.argmax()
             # action = self.env.action_space.sample()

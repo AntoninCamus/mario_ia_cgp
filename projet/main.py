@@ -4,8 +4,7 @@ import sys
 
 import cgp.cgp_utilies
 import emu.picture_processing
-from distributed import controller
-from distributed.controller import post_top
+from distributed.controller import get_top, post_top
 from emu.emu_env import EmuEnv
 
 # Hyper parameters
@@ -16,7 +15,7 @@ BREED = 2
 MUTA = 50
 
 # Saving parameters
-SAVE_EVERY = 5
+SAVE_EVERY = 1
 KEEP = 5
 
 # Program parameters
@@ -52,12 +51,13 @@ def learn(mpi_comm=None, save_name=None, host_name=None):
         pop.keep_bests()
 
         print("Best scores were {}...".format(pop.list_scores[:5]))
-
         # All Gathering :
         if i % SAVE_EVERY == 0:
             if host_name:
                 pop = cgp.cgp_utilies.deserialize_population(
-                    post_top(host_name, cgp.cgp_utilies.json.dumps(pop.serialize())), pop.genome_config)
+                    post_top(host_name, pop.serialize()),
+                    pop.genome_config
+                )
                 if debug:
                     print("Saving on server {}, new state is {}...".format(host_name, pop))
             elif mpi_comm:
@@ -70,6 +70,7 @@ def learn(mpi_comm=None, save_name=None, host_name=None):
                 if debug:
                     print("Saving in {}...".format(save_name))
                 pop.save(save_name)
+
         pop.next_gen()
 
 
@@ -114,7 +115,7 @@ def main():
     if args.collector:
         print("Using host : {}".format(args.collector))
         collector_ip = args.collector
-        print("Actual state of server is : {}".format(controller.get_top(collector_ip)))
+        print("Actual state of server is : {}".format(get_top(collector_ip)))
     else:
         collector_ip = None
 
