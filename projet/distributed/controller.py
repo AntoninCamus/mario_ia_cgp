@@ -14,10 +14,10 @@ class Controller(http.server.BaseHTTPRequestHandler):
 
     def do_POST(self):
         """Respond to a GET request."""
-        received = self.rfile.read1().decode("utf-8")
+        received = self.rfile.read(int(self.headers.get("Content-Length"))).decode("utf-8")
         for l in received.splitlines():
-            [val, gen] = l.split(" ")
-            val = int(val)
+            [val, gen] = l.split(" ", 1)
+            val = float(val)
             if len(genotype) < keep:
                 score.append(val)
                 genotype.append(gen)
@@ -31,7 +31,6 @@ class Controller(http.server.BaseHTTPRequestHandler):
                 for g in genotype:
                     print(g)
                 print("")
-
         self.do_GET()
 
     def do_GET(self):
@@ -40,12 +39,12 @@ class Controller(http.server.BaseHTTPRequestHandler):
         self.send_header("Content-type", "application/octet-stream")
         self.end_headers()
         for i in range(len(genotype)):
-            self.wfile.write(bytes(genotype[i], "utf-8"))
+            self.wfile.write(bytes(str(score[i]) + " " + genotype[i], "utf-8"))
             self.wfile.write(b"\n")
 
 
 def get_top(remote: str):
-    res = urllib.request.urlopen("http://" + remote + "/", timeout=5).read().decode("utf-8")
+    res = urllib.request.urlopen("http://{}:{}/".format(remote, PORT), timeout=5).read().decode("utf-8")
     return res.splitlines()
 
 
@@ -54,7 +53,12 @@ def post_top(remote: str, best):
     data = "\n".join(conc)
     res = urllib.request.urlopen("http://{}:{}/".format(remote, PORT), bytes(data, "utf-8"), timeout=5)
     res = res.read().decode("utf-8")
-    return res.splitlines()
+    l = []
+    for e in res.splitlines():
+        [val, gen] = e.split(" ", 1)
+        val = float(val)
+        l.append((val, gen))
+    return l
 
 
 if __name__ == "__main__":

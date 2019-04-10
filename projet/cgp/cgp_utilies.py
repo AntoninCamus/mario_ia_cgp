@@ -11,9 +11,9 @@ def deserialize_population(serialized_pop: [], genome_config: GenomeConfig, real
             new_genomes_list.append(Genome.from_list_of_dict(json.loads(decode(e))[1], genome_config))
             scores.append(json.loads(decode(e))[0])
         else:
-            new_genomes_list.append(Genome.from_list_of_dict(e[1], genome_config))
+            new_genomes_list.append(Genome.from_list_of_dict(json.loads(e[1]), genome_config))
             scores.append(e[0])
-    pop = Population(genome_config, len(new_genomes_list))
+    pop = Population(genome_config)
     pop.list_genomes = new_genomes_list
     pop.list_scores = scores
     return pop
