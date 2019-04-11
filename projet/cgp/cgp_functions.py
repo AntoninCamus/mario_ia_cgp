@@ -18,21 +18,22 @@ def abs_minus(x: Union[int, float, np.ndarray], y: Union[int, float, np.ndarray]
 
 
 def multiply(x: Union[int, float, np.ndarray], y: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
-    return x * y / 2
+    return np.nan_to_num(x * y / 2)
 
 
 def divide(x: Union[int, float, np.ndarray], y: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
     if isinstance(y, np.ndarray) and y.size > 1:
         if (y[:] != 0).all():
-            return x / y
+            res = x / y
         elif (y[:] != 0).any():
-            return x / np.mean(y)
+            res = x / np.mean(y)
         else:
-            return DEFAULT_RETURN
+            res = DEFAULT_RETURN
     elif y != 0:
-        return x / y
+        res = x / y
     else:
-        return DEFAULT_RETURN
+        res = DEFAULT_RETURN
+    return np.nan_to_num(res)
 
 
 # def cmult(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray:
@@ -41,15 +42,16 @@ def divide(x: Union[int, float, np.ndarray], y: Union[int, float, np.ndarray]) -
 def inv(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
     if isinstance(x, np.ndarray) and x.size > 1:
         if (x[:] != 0).all():
-            return 1 / x
+            res = 1 / x
         elif (x[:] != 0).any():
-            return 1 / np.mean(x)
+            res = 1 / np.mean(x)
         else:
-            return DEFAULT_RETURN
+            res = DEFAULT_RETURN
     elif x != 0:
-        return 1 / x
+        res = 1 / x
     else:
-        return DEFAULT_RETURN
+        res = DEFAULT_RETURN
+    return np.nan_to_num(res)
 
 
 def abs_x(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
@@ -90,11 +92,11 @@ def cos_x(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
 
 
 def sqrt_xy(x: Union[int, float, np.ndarray], y: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
-    return np.sqrt(np.power(x, 2) + np.power(y, 2)) / np.sqrt(2)
+    return np.nan_to_num(np.sqrt(np.power(x, 2) + np.power(y, 2)) / np.sqrt(2))
 
 
 def stddev(x: Union[int, float, np.ndarray]) -> np.float:
-    return np.float(np.std(x))
+    return np.float(np.nan_to_num(np.std(x)))
 
 
 def skew(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
@@ -238,7 +240,7 @@ def rotate(x: Union[int, float, np.ndarray], y: Union[int, float, np.ndarray]) -
 #    return [x] * len(y)
 
 def sum_x(x: Union[int, float, np.ndarray]) -> np.float:
-    return np.float(np.sum(x))
+    return np.float(np.nan_to_num(np.sum(x)))
 
 
 # def transpose(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
@@ -268,12 +270,12 @@ UNARY_FUNCTIONS = [
     inv,
     abs_x,
     sqrt,
-#    exp_x,
+    # exp_x,
     sin_x,
     cos_x,
     stddev,
-    skew,
-    kurtosis,
+    # skew,
+    # kurtosis,
     mean,
     range_x,
     round_x,
@@ -287,8 +289,7 @@ UNARY_FUNCTIONS = [
     const_0,
     const_1,
     split_before,
-    split_after,
-    sum_x
+    split_after
 ]
 
 BINARY_FUNCTIONS = [
