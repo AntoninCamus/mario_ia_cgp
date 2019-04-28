@@ -44,21 +44,27 @@ class Controller(http.server.BaseHTTPRequestHandler):
 
 
 def get_top(remote: str):
-    res = urllib.request.urlopen("http://{}:{}/".format(remote, PORT), timeout=5).read().decode("utf-8")
+    res = (
+        urllib.request.urlopen("http://{}:{}/".format(remote, PORT), timeout=5)
+            .read()
+            .decode("utf-8")
+    )
     return res.splitlines()
 
 
 def post_top(remote: str, best):
-    conc = [str(i[0]) + " " + i[1] for i in best]
-    data = "\n".join(conc)
-    res = urllib.request.urlopen("http://{}:{}/".format(remote, PORT), bytes(data, "utf-8"), timeout=5)
-    res = res.read().decode("utf-8")
-    l = []
-    for e in res.splitlines():
+    concatenated = [str(i[0]) + " " + i[1] for i in best]
+    data = "\n".join(concatenated)
+    raw_res = urllib.request.urlopen(
+        "http://{}:{}/".format(remote, PORT), bytes(data, "utf-8"), timeout=5
+    )
+    raw_res = raw_res.read().decode("utf-8")
+    listed_res = []
+    for e in raw_res.splitlines():
         [val, gen] = e.split(" ", 1)
         val = float(val)
-        l.append((val, gen))
-    return l
+        listed_res.append((val, gen))
+    return listed_res
 
 
 if __name__ == "__main__":

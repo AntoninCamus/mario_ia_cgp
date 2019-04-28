@@ -7,7 +7,7 @@ from cgp.cgp_model import Population, Genome
 
 class EmuEnv:
     def __init__(self, processor):
-        self.env = gym_super_mario_bros.make('SuperMarioBros-2-1-v2')
+        self.env = gym_super_mario_bros.make("SuperMarioBros-2-1-v2")
         self.env = BinarySpaceToDiscreteSpaceEnv(self.env, SIMPLE_MOVEMENT)
         self.processor = processor
 
@@ -42,5 +42,9 @@ class EmuEnv:
             if p.list_scores[i] is None:
                 p.list_scores[i] = e._make_it_play(p.list_genomes[i], render)
             if debug:
-                print("Genome {} got reward {}".format(p.list_genomes[i], p.list_scores[i]))
+                print(
+                    "Genome {} got reward {}".format(
+                        p.list_genomes[i], p.list_scores[i]
+                    )
+                )
         # Get 5 (or keep) best genome by sorting by mark the list, slice it and reconstruct it

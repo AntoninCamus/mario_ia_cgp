@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import argparse
 import cProfile
 import sys
@@ -19,12 +21,10 @@ SAVE_EVERY = 1
 KEEP = 5
 
 # Program parameters
-debug = False
-render = False
 image_processor = emu.picture_processing.PictureReducer()
 
 
-def learn(mpi_comm=None, save_name=None, host_name=None):
+def learn(mpi_comm=None, debug=False, render=False, save_name=None, host_name=None):
     if mpi_comm:
         rank = mpi_comm.Get_rank()
     else:
@@ -55,14 +55,17 @@ def learn(mpi_comm=None, save_name=None, host_name=None):
         if i % SAVE_EVERY == 0:
             if host_name:
                 pop = cgp.cgp_utilies.deserialize_population(
-                    post_top(host_name, pop.serialize()),
-                    pop.genome_config
+                    post_top(host_name, pop.serialize()), pop.genome_config
                 )
                 if debug:
-                    print("Saving on server {}, new state is {}...".format(host_name, pop))
+                    print(
+                        "Saving on server {}, new state is {}...".format(host_name, pop)
+                    )
             elif mpi_comm:
-                shared = [cgp.cgp_utilies.deserialize_population(p, pop.genome_config) for p in
-                          mpi_comm.allgather(pop.serialize())]
+                shared = [
+                    cgp.cgp_utilies.deserialize_population(p, pop.genome_config)
+                    for p in mpi_comm.allgather(pop.serialize())
+                ]
                 cgp.cgp_utilies.merge_populations(pop, shared)
 
             if rank == 0:
@@ -78,64 +81,85 @@ def profile_run():
     for i in range(2):
         cfg = cgp.cgp_utilies.GenomeConfig(image_processor.get_dim(), 7, 1000)
         pop = cgp.cgp_utilies.Population(cfg, 10)
-        EmuEnv.make_them_play(pop, image_processor, render=render)
+        EmuEnv.make_them_play(pop, image_processor)
         pop.next_gen()
 
 
 def profile():
-    cProfile.run('profile_run()')
+    cProfile.run("profile_run()")
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Cartesian Genetic Program playing Mario Bros :3')
-    parser.add_argument("-l", "--load", help="Charge une sauvegarde")
-    parser.add_argument("-c", "--collector", help="Indique l'ip du serveur de partage")
-    parser.add_argument("-m", "--mpi", help="Se lance en distribué MPI, incompatible avec le profiling",
-                        action="store_true")
-    parser.add_argument("-d", "--debug", help="Affiche les textes de débogage", action="store_true")
-    parser.add_argument("-r", "--render", help="Affiche les parties en cours", action="store_true")
-    parser.add_argument("-p", "--profile", help="Profile un run, incompatible avec le lancement via mpi",
-                        action="store_true")
+    # PARSER CONFIGURATION
+    parser = argparse.ArgumentParser(
+        description="Cartesian Genetic Program playing Mario Bros :3"
+    )
+    parser.add_argument("-l", "--load", help="Load a save file.")
+    parser.add_argument("-c", "--collector", help="Use a remote server to share results between workers.")
+    parser.add_argument(
+        "-m",
+        "--mpi",
+        help="Start the program in distributed with MPI",
+        action="store_true",
+    )
+    parser.add_argument(
+        "-d", "--debug", help="Display debugging messages.", action="store_true"
+    )
+    parser.add_argument(
+        "-r", "--render", help="Display screen during playing.", action="store_true"
+    )
+    parser.add_argument(
+        "-p",
+        "--profile",
+        help="Start a profiling of performances, should NOT be used with other options.",
+        action="store_true",
+    )
+
+    # PARSING
     args = parser.parse_args()
-    if args.debug:
-        print("Debug mode activated")
-        global debug
-        debug = True
-    if args.render:
-        print("Rendering activated")
-        global render
-        render = True
-
-    if args.load:
-        print("Loading save {}".format(args.load))
-        save_name = args.load
-    else:
-        save_name = None
-
-    if args.collector:
-        print("Using host : {}".format(args.collector))
-        collector_ip = args.collector
-        print("Actual state of server is : {}".format(get_top(collector_ip)))
-    else:
-        collector_ip = None
-
-    if args.mpi:
-        from mpi4py import MPI
-        comm = MPI.COMM_WORLD
-    else:
-        comm = None
 
     if args.profile:
+        if args.debug or args.load or args.mpi or args.collector or args.render:
+            print(
+                "Debug, load, MPI, collector, or render options are not compatible with profiling, aborting."
+            )
+            exit(1)
         print("Starting profiling")
         profile()
         sys.exit()
     else:
+
+        # Configuring variables
+        if args.mpi:
+            from mpi4py import MPI
+            comm = MPI.COMM_WORLD
+        else:
+            comm = None
+
         if not comm:
             print("Starting learning")
         elif comm.Get_rank() == 0:
             print("Starting learning with MPI")
 
-        learn(comm, save_name=save_name, host_name=collector_ip)
+        # Printing only once if you use mpi (avoid spamming stdout)
+        if not comm or comm.Get_rank() == 0:
+            if args.debug:
+                print("Debug mode activated")
+            if args.render:
+                print("Rendering activated")
+            if args.collector:
+                print("Using host : {}".format(args.collector))
+                print("Actual state of server is : {}".format(get_top(args.collector)))
+            if args.load:
+                print("Loading save {}".format(args.load))
+
+        learn(
+            comm,
+            debug=args.debug,
+            render=args.render,
+            save_name=args.load,
+            host_name=args.collector,
+        )
         sys.exit()
 
 

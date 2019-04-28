@@ -12,8 +12,16 @@ _binary_reduce_func = []
 
 
 class GenomeConfig:
-    def __init__(self, inp: int, out: int, node=1, binary_func=None, unary_func=None, binary_reduce_func=None,
-                 unary_reduce_func=None):
+    def __init__(
+            self,
+            inp: int,
+            out: int,
+            node=1,
+            binary_func=None,
+            unary_func=None,
+            binary_reduce_func=None,
+            unary_reduce_func=None,
+    ):
         if binary_func is None:
             binary_func = _binary_func
         if unary_func is None:
@@ -72,13 +80,17 @@ class BinaryNeurone:
             "node_id": self.node_id,
             "pred1": self.pred1,
             "pred2": self.pred2,
-            "func": self.func
+            "func": self.func,
         }
 
     def __eq__(self, other):
         if not isinstance(other, BinaryNeurone):
             return False
-        return self.pred1 == other.pred1 and self.pred2 == other.pred2 and self.func == other.func
+        return (
+                self.pred1 == other.pred1
+                and self.pred2 == other.pred2
+                and self.func == other.func
+        )
 
     @staticmethod
     def from_dict(d: dict, genome_config: GenomeConfig):
@@ -124,7 +136,7 @@ class UnaryNeurone:
             "type": "UnaryNeurone",
             "node_id": self.node_id,
             "pred": self.pred,
-            "func": self.func
+            "func": self.func,
         }
 
     def __eq__(self, other):
@@ -181,13 +193,17 @@ class BinaryOutputNeurone:
             "type": "BinaryOutputNeurone",
             "pred1": self.pred1,
             "pred2": self.pred2,
-            "func": self.func
+            "func": self.func,
         }
 
     def __eq__(self, other):
         if not isinstance(other, BinaryOutputNeurone):
             return False
-        return self.pred1 == other.pred1 and self.pred2 == other.pred2 and self.func == other.func
+        return (
+                self.pred1 == other.pred1
+                and self.pred2 == other.pred2
+                and self.func == other.func
+        )
 
     @staticmethod
     def from_dict(d: dict, genome_config: GenomeConfig):
@@ -228,11 +244,7 @@ class UnaryOutputNeurone:
         return [self.pred]
 
     def to_dict(self) -> dict:
-        return {
-            "type": "UnaryOutputNeurone",
-            "pred": self.pred,
-            "func": self.func
-        }
+        return {"type": "UnaryOutputNeurone", "pred": self.pred, "func": self.func}
 
     def __eq__(self, other):
         if not isinstance(other, UnaryOutputNeurone):
@@ -252,18 +264,29 @@ class UnaryOutputNeurone:
 class Genome:
     def __init__(self, genome_config: GenomeConfig):
         self.conf = genome_config
-        self.genotype = [BinaryNeurone(genome_config, i) if randint(0, 1) else UnaryNeurone(genome_config, i) for i in
-                         range(genome_config.node)]
-        self.genotype += [UnaryOutputNeurone(genome_config) for _ in range(genome_config.out)]
+        self.genotype = [
+            BinaryNeurone(genome_config, i)
+            if randint(0, 1)
+            else UnaryNeurone(genome_config, i)
+            for i in range(genome_config.node)
+        ]
+        self.genotype += [
+            UnaryOutputNeurone(genome_config) for _ in range(genome_config.out)
+        ]
         # self.genotype += [BinaryOutputNeurone(genome_config) if randint(0, 1) else UnaryOutputNeurone(genome_config)
         #                  for _ in range(genome_config.out)]
         self.used_node = np.empty((), dtype=bool)
         self.compute_used_node()
 
     def compute_used_node(self):
-        self.used_node = np.zeros((self.conf.inp + self.conf.node + self.conf.out,), dtype=bool)
+        self.used_node = np.zeros(
+            (self.conf.inp + self.conf.node + self.conf.out,), dtype=bool
+        )
         for i in range(self.conf.node + self.conf.out - 1, -1, -1):
-            if type(self.genotype[i]) is BinaryOutputNeurone or type(self.genotype[i]) is UnaryOutputNeurone:
+            if (
+                    type(self.genotype[i]) is BinaryOutputNeurone
+                    or type(self.genotype[i]) is UnaryOutputNeurone
+            ):
                 self.used_node[i + self.conf.inp] = True
             if self.used_node[i + self.conf.inp]:
                 for pred_idx in self.genotype[i].preds():
@@ -271,7 +294,7 @@ class Genome:
 
     def evaluate(self, inp: [[]]) -> []:
         res = list(inp) + [None] * self.conf.node
-        res[:self.conf.inp] = inp
+        res[: self.conf.inp] = inp
         for i in range(self.conf.inp, self.conf.inp + self.conf.node):
             if self.used_node[i]:
                 try:
@@ -279,15 +302,31 @@ class Genome:
                     if np.isnan(res[i]).any() or np.isinf(res[i]).any():
                         raise ArithmeticError
                 except Exception as e:
-                    print("Error", e, "with node", self.genotype[i - self.conf.inp],
-                          self.genotype[i - self.conf.inp].func
-                          , "output is", res[i])
+                    print(
+                        "Error",
+                        e,
+                        "with node",
+                        self.genotype[i - self.conf.inp],
+                        self.genotype[i - self.conf.inp].func,
+                        "output is",
+                        res[i],
+                    )
                     res[i] = 1
                     for j in self.genotype[i - self.conf.inp].preds():
-                        print("input", self.genotype[j - self.conf.inp], self.genotype[j - self.conf.inp].func,
-                              "with value", res[j])
+                        print(
+                            "input",
+                            self.genotype[j - self.conf.inp],
+                            self.genotype[j - self.conf.inp].func,
+                            "with value",
+                            res[j],
+                        )
 
-        return np.array([self.genotype[i].evaluate(res) for i in range(self.conf.node, self.conf.node + self.conf.out)])
+        return np.array(
+            [
+                self.genotype[i].evaluate(res)
+                for i in range(self.conf.node, self.conf.node + self.conf.out)
+            ]
+        )
 
     def clone(self):
         res = Genome(self.conf)
@@ -307,8 +346,10 @@ class Genome:
         return self
 
     def breed(self, other):
-        self.genotype = [self.genotype[i] if choice([True, False]) else other.genotype[i].clone() for i in
-                         range(len(self.genotype))]
+        self.genotype = [
+            self.genotype[i] if choice([True, False]) else other.genotype[i].clone()
+            for i in range(len(self.genotype))
+        ]
         self.compute_used_node()
         return self
 
@@ -326,22 +367,30 @@ class Genome:
     @staticmethod
     def from_list_of_dict(l: list, gc: GenomeConfig):
         res = Genome(gc)
-        neurone_types = [UnaryNeurone, BinaryNeurone, UnaryOutputNeurone, BinaryOutputNeurone]
+        neurone_types = [
+            UnaryNeurone,
+            BinaryNeurone,
+            UnaryOutputNeurone,
+            BinaryOutputNeurone,
+        ]
 
         def not_none(x):
             for i in x:
                 if i is not None:
                     return i
 
-        res.genotype = [not_none([Neurone.from_dict(node, gc) for Neurone in neurone_types])
-                        for node in l]
+        res.genotype = [
+            not_none([Neurone.from_dict(node, gc) for Neurone in neurone_types])
+            for node in l
+        ]
         res.compute_used_node()
         return res
 
 
 class Population(object):
-
-    def __init__(self, genome_config: GenomeConfig, size=50, keep=5, breed=None, muta_count=None):
+    def __init__(
+            self, genome_config: GenomeConfig, size=50, keep=5, breed=None, muta_count=None
+    ):
         self.list_genomes = [Genome(genome_config) for _ in range(size)]
         self.list_scores = [None] * size
         self.genome_config = genome_config
@@ -357,17 +406,22 @@ class Population(object):
             self.muta_count = muta_count
 
     def keep_bests(self):
-        zipres = [(self.list_scores[i], self.list_genomes[i]) for i in range(len(self.list_genomes))]
-        bests = [t for t in sorted(zipres, key=lambda x: x[0])[-self.keep:]][::-1]
+        zipped_result = zip(self.list_scores, self.list_genomes)
+        bests = [t for t in sorted(zipped_result, key=lambda x: x[0])[-self.keep:]][::-1]
         self.list_scores = [i[0] for i in bests]
         self.list_genomes = [i[1] for i in bests]
 
     def next_gen(self):
-        zipres = [(self.list_scores[i], self.list_genomes[i]) for i in range(len(self.list_genomes))]
-        new_parents = [t for t in sorted(zipres, key=lambda x: x[0])[-self.keep:]][::-1]
-        new_breed = [(None, choice(new_parents)[1].clone().breed(choice(new_parents)[1])) for _ in range(self.breed)]
-        new_mutated = [(None, choice(new_parents)[1].clone().mutate(self.muta_count)) for _ in
-                       range(self.size - self.keep - self.breed)]
+        zipped_result = zip(self.list_scores, self.list_genomes)
+        new_parents = [t for t in sorted(zipped_result, key=lambda x: x[0])[-self.keep:]][::-1]
+        new_breed = [
+            (None, choice(new_parents)[1].clone().breed(choice(new_parents)[1]))
+            for _ in range(self.breed)
+        ]
+        new_mutated = [
+            (None, choice(new_parents)[1].clone().mutate(self.muta_count))
+            for _ in range(self.size - self.keep - self.breed)
+        ]
         new = new_parents + new_breed + new_mutated
         self.list_scores = [i[0] for i in new]
         self.list_genomes = [i[1] for i in new]
@@ -375,7 +429,9 @@ class Population(object):
     def to_list(self) -> [float, dict]:
         tmp_list = []
         for i in range(len(self.list_genomes)):
-            tmp_list.append((self.list_scores[i], self.list_genomes[i].to_list_of_dict()))
+            tmp_list.append(
+                (self.list_scores[i], self.list_genomes[i].to_list_of_dict())
+            )
         return tmp_list
 
     def serialize(self) -> [float, str]:

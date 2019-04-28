@@ -112,10 +112,7 @@ def mean(x: Union[int, float, np.ndarray]) -> np.float:
 
 
 def range_x(x: Union[int, float, np.ndarray]) -> np.float:
-    if isinstance(x, np.ndarray) and x.size == 0:
-        return DEFAULT_RETURN
-    else:
-        return np.float(np.max(x) - np.min(x))
+    return np.float(np.max(x) - np.min(x)) if not (isinstance(x, np.ndarray) and x.size == 0) else DEFAULT_RETURN
 
 
 def round_x(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
@@ -160,18 +157,18 @@ def min2(x: Union[int, float, np.ndarray], y: Union[int, float, np.ndarray]) -> 
 
 def split_before(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
     if isinstance(x, np.ndarray) and x.size > 1:
-        tmp = np.array_split(x, 2)[0]
-        zeros = np.zeros(x.size - tmp.size)
-        return np.append(tmp, zeros)
+        first_half = np.array_split(x, 2)[0]
+        zeros = np.zeros(x.size - first_half.size)
+        return np.append(first_half, zeros)
     else:
         return DEFAULT_RETURN
 
 
 def split_after(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
     if isinstance(x, np.ndarray) and x.size > 1:
-        tmp = np.array_split(x, 2)[1]
-        zeros = np.zeros(x.size - tmp.size)
-        return np.append(tmp, zeros)
+        second_half = np.array_split(x, 2)[1]
+        zeros = np.zeros(x.size - second_half.size)
+        return np.append(second_half, zeros)
     else:
         return DEFAULT_RETURN
 
@@ -191,9 +188,7 @@ def split_after(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarra
 def index_y(x: Union[int, float, np.ndarray], y: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
     try:
         return x[y]
-    except TypeError:
-        return DEFAULT_RETURN
-    except IndexError:
+    except (TypeError, IndexError):
         return DEFAULT_RETURN
 
 
@@ -201,17 +196,11 @@ def index_y(x: Union[int, float, np.ndarray], y: Union[int, float, np.ndarray]) 
 #    NotImplemented
 
 def first(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
-    if (isinstance(x, np.ndarray) and x.size > 1):
-        return x[0]
-    else:
-        return DEFAULT_RETURN
+    return x[0] if (isinstance(x, np.ndarray) and x.size > 1) else DEFAULT_RETURN
 
 
 def last(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
-    if isinstance(x, np.ndarray) and x.size > 1:
-        return x[-1]
-    else:
-        return DEFAULT_RETURN
+    return x[-1] if (isinstance(x, np.ndarray) and x.size > 1) else DEFAULT_RETURN
 
 
 # def differences(x : Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
@@ -226,10 +215,7 @@ def last(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
 
 
 def rotate(x: Union[int, float, np.ndarray], y: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
-    if (isinstance(y, np.ndarray)):
-        return np.roll(x, np.int(np.mean(y)))
-    else:
-        return np.roll(x, np.int(y))
+    return np.roll(x, np.int(np.mean(y))) if isinstance(y, np.ndarray) else np.roll(x, np.int(y))
 
 
 # def push_back(x : Union[int, float, np.ndarray], y : Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
@@ -253,17 +239,11 @@ def sum_x(x: Union[int, float, np.ndarray]) -> np.float:
 #        return np.array([x])
 
 def const_1(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
-    if isinstance(x, np.ndarray):
-        return np.array([1] * x.size)
-    else:
-        return DEFAULT_RETURN
+    return np.array([1] * x.size) if isinstance(x, np.ndarray) else DEFAULT_RETURN
 
 
 def const_0(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
-    if isinstance(x, np.ndarray):
-        return np.zeros(x.size)
-    else:
-        return DEFAULT_RETURN
+    return np.zeros(x.size) if isinstance(x, np.ndarray) else DEFAULT_RETURN
 
 
 UNARY_FUNCTIONS = [
@@ -297,7 +277,7 @@ BINARY_FUNCTIONS = [
     abs_minus,
     multiply,
     divide,
-#    x_pow_y,
+    # x_pow_y,
     sqrt_xy,
     max2,
     min2,
