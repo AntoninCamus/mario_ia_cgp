@@ -11,13 +11,13 @@ from emu.emu_env import EmuEnv
 
 # Hyper parameters
 NB_GENS = 10000
-POP_SIZE = 200
-GENOME_SIZE = 512
-BREED = 2
+POP_SIZE = 120
+GENOME_SIZE = 1024
+BREED = 3
 MUTA = 20
 
 # Saving parameters
-SAVE_EVERY = 1
+SAVE_EVERY = 5
 KEEP = 5
 
 # Program parameters
