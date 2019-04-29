@@ -360,7 +360,7 @@ class Genome:
         if len(self.genotype) != len(other.genotype):
             return False
         for i in range(len(self.genotype)):
-            if self.genotype[i] != other.genotype[i]:
+            if self.genotype[i] != other.genotype[i] and self.used_node[i + self.conf.inp] and other.used_node[i + other.conf.inp]:
                 return False
         return True
 
