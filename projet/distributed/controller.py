@@ -1,8 +1,6 @@
 import http.server
 import urllib.request
 
-from main import KEEP
-
 genotype = list()
 score = list()
 
@@ -19,6 +17,7 @@ class Controller(http.server.BaseHTTPRequestHandler):
         for l in received.splitlines():
             [val, gen] = l.split(" ", 1)
             val = float(val)
+            from main import KEEP
             if len(genotype) < KEEP:
                 score.append(val)
                 genotype.append(gen)

@@ -10,15 +10,14 @@ from distributed.controller import get_top, post_top
 from emu.emu_env import EmuEnv
 
 # Hyper parameters
-NB_GENS = 10000
-POP_SIZE = 120
+POPULATION_SIZE = 100
 GENOME_SIZE = 1024
-BREED = 3
-MUTA = 20
+NB_BREED = 5  # Number of childrens generated from know-good parents
+NB_MUTATIONS = 20  # Number of mutation per genome applied from a parent to a children
 
 # Saving parameters
-SAVE_EVERY = 5
-KEEP = 5
+SAVE_EVERY = 5  # Number of states between saves
+KEEP = 10  # Number of good children to pass to the next gen
 
 # Program parameters
 image_processor = emu.picture_processing.PictureReducer()
@@ -33,14 +32,15 @@ def learn(mpi_comm=None, debug=False, render=False, save_name=None, host_name=No
     cfg = cgp.cgp_utilies.GenomeConfig(image_processor.get_dim(), 7, GENOME_SIZE)
 
     if save_name is None:
-        pop = cgp.cgp_utilies.Population(cfg, POP_SIZE, KEEP)
+        pop = cgp.cgp_utilies.Population(cfg, POPULATION_SIZE, KEEP)
     else:
         pop = cgp.cgp_utilies.load_population(cfg, save_name)
-        pop.size = POP_SIZE
+        pop.size = POPULATION_SIZE
         pop.keep = KEEP
         pop.next_gen()
 
-    for i in range(1, NB_GENS):
+    i = 0
+    while True:
         if mpi_comm and debug:
             print("Testing generation {} on worker {}...".format(i, rank))
         else:
@@ -75,6 +75,7 @@ def learn(mpi_comm=None, debug=False, render=False, save_name=None, host_name=No
                 pop.save(save_name)
 
         pop.next_gen()
+        i += 1
 
 
 def profile_run():

@@ -116,7 +116,7 @@ def range_x(x: Union[int, float, np.ndarray]) -> np.float:
 
 
 def round_x(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
-    return np.round(x)
+    return np.nan_to_num(np.round(x))
 
 
 def ceil(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
@@ -128,17 +128,11 @@ def floor(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
 
 
 def max1(x: Union[int, float, np.ndarray]) -> np.float:
-    if isinstance(x, np.ndarray) and x.size == 0:
-        return DEFAULT_RETURN
-    else:
-        return np.float(np.max(x))
+    return np.float(np.max(x)) if not (isinstance(x, np.ndarray) and x.size == 0) else DEFAULT_RETURN
 
 
 def min1(x: Union[int, float, np.ndarray]) -> np.float:
-    if isinstance(x, np.ndarray) and x.size == 0:
-        return DEFAULT_RETURN
-    else:
-        return np.float(np.min(x))
+    return np.float(np.min(x)) if not (isinstance(x, np.ndarray) and x.size == 0) else DEFAULT_RETURN
 
 
 def max2(x: Union[int, float, np.ndarray], y: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
