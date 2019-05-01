@@ -10,15 +10,15 @@ DEFAULT_RETURN = np.float(0)
 
 
 def add(x: Union[int, float, np.ndarray], y: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
-    return (x + y) / 2
+    return np.nan_to_num(abs_x(x + y)) / 2
 
 
 def abs_minus(x: Union[int, float, np.ndarray], y: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
-    return abs_x(x - y) / 2
+    return np.nan_to_num(abs_x(x - y)) / 2
 
 
 def multiply(x: Union[int, float, np.ndarray], y: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
-    return np.nan_to_num(x * y / 2)
+    return np.nan_to_num(x * y) / 2
 
 
 def divide(x: Union[int, float, np.ndarray], y: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
@@ -209,7 +209,7 @@ def last(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
 
 
 def rotate(x: Union[int, float, np.ndarray], y: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
-    return np.roll(x, np.int(np.mean(y))) if isinstance(y, np.ndarray) else np.roll(x, np.int(y))
+    return np.roll(x, np.int(np.mean(y / 2))) if isinstance(y, np.ndarray) else np.roll(x, np.int(y / 2))
 
 
 # def push_back(x : Union[int, float, np.ndarray], y : Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
