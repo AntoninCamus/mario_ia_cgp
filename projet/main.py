@@ -3,6 +3,7 @@
 import argparse
 import cProfile
 import sys
+from os import system
 
 import cgp.cgp_utilies
 import emu.picture_processing
@@ -90,6 +91,33 @@ def profile():
     cProfile.run("profile_run()")
 
 
+def visualize(save_name):
+    cfg = cgp.cgp_utilies.GenomeConfig(image_processor.get_dim(), 7, GENOME_SIZE)
+    pop = cgp.cgp_utilies.load_population(cfg, save_name)
+    for (i,gen) in enumerate(pop.list_genomes):
+        gen.compute_used_node()
+        print("Genome", i, ":", sum(gen.used_node))
+        infile = "viz/{}_{}".format(save_name,i)
+        with open(infile + ".gv", "w") as f:
+            f.write("digraph gen{} {{\n".format(i))
+            for i in range(gen.conf.inp):
+                f.write('    {} [label="{}"];\n'.format(i, "input "+str(i)))
+                f.write('    {} -> {};\n'.format("Input",i))
+            for i in range(gen.conf.inp, gen.conf.inp + gen.conf.node):
+                if gen.used_node[i]:
+                    f.write('    {} [label="{}"];\n'.format(i, "{}: {}".format(i, gen.genotype[i - gen.conf.inp].fn_name())))
+                    for p in gen.genotype[i - gen.conf.inp].preds():
+                        f.write('    {} -> {};\n'.format(p, i))
+            for i in range(gen.conf.inp + gen.conf.node, gen.conf.inp + gen.conf.node + gen.conf.out):
+                f.write('    {} [label="{}"];\n'.format(i, "output {}: {}".format(i - gen.conf.node - gen.conf.inp, gen.genotype[i - gen.conf.inp].fn_name())))
+                f.write('    {} -> {};\n'.format(i, "Decision"))
+                for p in gen.genotype[i - gen.conf.inp].preds():
+                    f.write('    {} -> {};\n'.format(p, i))
+
+            f.write("}")
+        system("dot -Tpng {}.gv -o {}.png".format(infile, infile))
+
+
 def main():
     # PARSER CONFIGURATION
     parser = argparse.ArgumentParser(
@@ -115,12 +143,15 @@ def main():
         help="Start a profiling of performances, should NOT be used with other options.",
         action="store_true",
     )
+    parser.add_argument(
+        "-v", "--visualize", help="Visualize given graph.", action="store_true"
+    )
 
     # PARSING
     args = parser.parse_args()
 
     if args.profile:
-        if args.debug or args.load or args.mpi or args.collector or args.render:
+        if args.debug or args.load or args.mpi or args.collector or args.render or args.visualize:
             print(
                 "Debug, load, MPI, collector, or render options are not compatible with profiling, aborting."
             )
@@ -128,6 +159,8 @@ def main():
         print("Starting profiling")
         profile()
         sys.exit()
+    elif args.visualize and args.load:
+        visualize(args.load)
     else:
 
         # Configuring variables

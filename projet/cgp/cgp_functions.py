@@ -287,3 +287,49 @@ UNARY_REDUCERS = [
     range_x,
     sum_x
 ]
+
+
+NAMES = [
+[
+    "add",
+    "abs_minus",
+    "multiply",
+    "divide",
+    "sqrt_xy",
+    "max2",
+    "min2",
+    "index_y",
+    "rotate"
+],
+[
+    "inv",
+    "abs_x",
+    "sqrt",
+    "sin_x",
+    "cos_x",
+    "stddev",
+    "mean",
+    "range_x",
+    "round_x",
+    "ceil",
+    "floor",
+    "max1",
+    "min1",
+    "first",
+    "last",
+    "sum_x",
+    "const_0",
+    "const_1",
+    "split_before",
+    "split_after"
+],
+[],
+[
+    "max1",
+    "min1",
+    "mean",
+    "stddev",
+    "range_x",
+    "sum_x"
+]
+]

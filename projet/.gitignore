@@ -1,4 +1,6 @@
 saves/*.json
+viz/*.png
+viz/*.gv
 __pycache__/
 hostfile
 venv/
