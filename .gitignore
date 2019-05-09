@@ -1,2 +1,11 @@
+saves/*.json
+viz/*.png
+viz/*.gv
+__pycache__/
+hostfile
 venv/
 .idea/
+
+build/
+*.so
+*.c

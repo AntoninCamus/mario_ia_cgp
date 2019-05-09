@@ -1,6 +1,7 @@
 import unittest
 
 import numpy as np
+
 from cgp.cgp_functions import UNARY_FUNCTIONS, BINARY_FUNCTIONS
 
 

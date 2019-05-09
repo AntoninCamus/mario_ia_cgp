@@ -11,7 +11,7 @@ def get_color_bitmask(color: [], image: np.ndarray) -> np.ndarray:
     return cv2.inRange(image, color, color)
 
 
-class PictureReducer:
+class PictureAnalyser:
     @classmethod
     def get_dim(cls) -> int:
         return 7

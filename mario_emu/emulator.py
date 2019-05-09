@@ -5,11 +5,11 @@ from nes_py.wrappers import BinarySpaceToDiscreteSpaceEnv
 from cgp.cgp_model import Population, Genome
 
 
-class EmuEnv:
-    def __init__(self, processor):
+class Emulator:
+    def __init__(self, picture_processor):
         self.env = gym_super_mario_bros.make("SuperMarioBros-2-1-v2")
         self.env = BinarySpaceToDiscreteSpaceEnv(self.env, SIMPLE_MOVEMENT)
-        self.processor = processor
+        self.picture_processor = picture_processor
 
     def _make_it_play(self, g: Genome, render: bool) -> int:
         observation = self.env.reset()
@@ -18,7 +18,7 @@ class EmuEnv:
         for i in range(1, 10000):
             if render:
                 self.env.render()
-            ob_flat = self.processor.process(observation)
+            ob_flat = self.picture_processor.process(observation)
             decision = g.evaluate(ob_flat)
             action = decision.argmax()
             # action = self.env.action_space.sample()
@@ -36,8 +36,8 @@ class EmuEnv:
         return total_reward
 
     @staticmethod
-    def make_them_play(p: Population, processor, render=False, debug=False):
-        e = EmuEnv(processor)
+    def eval_population(p: Population, processor, render=False, debug=False):
+        e = Emulator(processor)
         for i in range(len(p.list_genomes)):
             if p.list_scores[i] is None:
                 p.list_scores[i] = e._make_it_play(p.list_genomes[i], render)

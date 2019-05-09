@@ -239,6 +239,18 @@ def const_1(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
 def const_0(x: Union[int, float, np.ndarray]) -> Union[int, float, np.ndarray]:
     return np.zeros(x.size) if isinstance(x, np.ndarray) else DEFAULT_RETURN
 
+BINARY_FUNCTIONS = [
+    add,
+    abs_minus,
+    multiply,
+    divide,
+    # x_pow_y,
+    sqrt_xy,
+    max2,
+    min2,
+    index_y,
+    rotate
+]
 
 UNARY_FUNCTIONS = [
     inv,
@@ -266,17 +278,8 @@ UNARY_FUNCTIONS = [
     split_after
 ]
 
-BINARY_FUNCTIONS = [
-    add,
-    abs_minus,
-    multiply,
-    divide,
-    # x_pow_y,
-    sqrt_xy,
-    max2,
-    min2,
-    index_y,
-    rotate
+BINARY_REDUCERS = [
+
 ]
 
 UNARY_REDUCERS = [
@@ -286,50 +289,4 @@ UNARY_REDUCERS = [
     stddev,
     range_x,
     sum_x
-]
-
-
-NAMES = [
-[
-    "add",
-    "abs_minus",
-    "multiply",
-    "divide",
-    "sqrt_xy",
-    "max2",
-    "min2",
-    "index_y",
-    "rotate"
-],
-[
-    "inv",
-    "abs_x",
-    "sqrt",
-    "sin_x",
-    "cos_x",
-    "stddev",
-    "mean",
-    "range_x",
-    "round_x",
-    "ceil",
-    "floor",
-    "max1",
-    "min1",
-    "first",
-    "last",
-    "sum_x",
-    "const_0",
-    "const_1",
-    "split_before",
-    "split_after"
-],
-[],
-[
-    "max1",
-    "min1",
-    "mean",
-    "stddev",
-    "range_x",
-    "sum_x"
-]
 ]

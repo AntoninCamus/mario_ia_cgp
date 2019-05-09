@@ -3,7 +3,7 @@ from random import randint, choice
 
 import numpy as np
 
-from cgp.cgp_functions import UNARY_FUNCTIONS, BINARY_FUNCTIONS, UNARY_REDUCERS, NAMES
+from cgp.cgp_functions import UNARY_FUNCTIONS, BINARY_FUNCTIONS, UNARY_REDUCERS
 
 _binary_func = BINARY_FUNCTIONS
 _unary_func = UNARY_FUNCTIONS
@@ -53,7 +53,7 @@ class BinaryNeurone:
         return self.conf.binary_func[self.func](val1, val2)
 
     def fn_name(self):
-        return NAMES[0][self.func]
+        return self.conf.binary_func[self.func].__name__
 
     def clone(self):
         res = BinaryNeurone(self.conf, self.node_id)
@@ -117,7 +117,7 @@ class UnaryNeurone:
         return self.conf.unary_func[self.func](data[self.pred])
 
     def fn_name(self):
-        return NAMES[1][self.func]
+        return self.conf.unary_func[self.func].__name__
 
     def clone(self):
         res = UnaryNeurone(self.conf, self.node_id)
@@ -173,7 +173,7 @@ class BinaryOutputNeurone:
         return self.conf.binary_reduce_func[self.func](val1, val2)
 
     def fn_name(self):
-        return NAMES[2][self.func]
+        return self.conf.binary_reduce_func[self.func].__name__
 
     def clone(self):
         res = BinaryOutputNeurone(self.conf)
@@ -235,7 +235,7 @@ class UnaryOutputNeurone:
         return self.conf.unary_reduce_func[self.func](data[self.pred])
 
     def fn_name(self):
-        return NAMES[3][self.func]
+        return self.conf.unary_reduce_func[self.func].__name__
 
     def clone(self):
         res = UnaryOutputNeurone(self.conf)
