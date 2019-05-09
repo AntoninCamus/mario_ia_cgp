@@ -1,6 +1,7 @@
 # Mario CGP
 
 ## Installation
+
 Pour utiliser ce programme il est obligatoire d'avoir les modules python suivants :
 ```
 numpy
@@ -35,4 +36,4 @@ localhost slots=<nb slots>
 ```
 en remplaçant ```<nb slots>``` par votre nombre de coeurs. Vous pouvez ensuite ajouter de la même manière toutes les autres machines distantes en ajoutant des lignes ```<ip> slots=<cores>```.
 
-Ensuite, pour lancer le programme, utilisez la commande ```mpiexec --hostfile ./hostfile -n 4 python ./main.py --mpi --debug```
+Ensuite, pour lancer le programme, utilisez la commande ```mpiexec --hostfile ./hostfile -n 4 ./main.py --mpi --debug```
