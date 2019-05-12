@@ -13,14 +13,14 @@ _binary_reduce_func = []
 
 class GenomeConfig:
     def __init__(
-            self,
-            inp: int,
-            out: int,
-            node=1,
-            binary_func=None,
-            unary_func=None,
-            binary_reduce_func=None,
-            unary_reduce_func=None,
+        self,
+        inp: int,
+        out: int,
+        node=1,
+        binary_func=None,
+        unary_func=None,
+        binary_reduce_func=None,
+        unary_reduce_func=None,
     ):
         if binary_func is None:
             binary_func = _binary_func
@@ -89,11 +89,7 @@ class BinaryNeurone:
     def __eq__(self, other):
         if not isinstance(other, BinaryNeurone):
             return False
-        return (
-                self.pred1 == other.pred1
-                and self.pred2 == other.pred2
-                and self.func == other.func
-        )
+        return self.pred1 == other.pred1 and self.pred2 == other.pred2 and self.func == other.func
 
     @staticmethod
     def from_dict(d: dict, genome_config: GenomeConfig):
@@ -208,11 +204,7 @@ class BinaryOutputNeurone:
     def __eq__(self, other):
         if not isinstance(other, BinaryOutputNeurone):
             return False
-        return (
-                self.pred1 == other.pred1
-                and self.pred2 == other.pred2
-                and self.func == other.func
-        )
+        return self.pred1 == other.pred1 and self.pred2 == other.pred2 and self.func == other.func
 
     @staticmethod
     def from_dict(d: dict, genome_config: GenomeConfig):
@@ -277,27 +269,21 @@ class Genome:
     def __init__(self, genome_config: GenomeConfig):
         self.conf = genome_config
         self.genotype = [
-            BinaryNeurone(genome_config, i)
-            if randint(0, 1)
-            else UnaryNeurone(genome_config, i)
+            BinaryNeurone(genome_config, i) if randint(0, 1) else UnaryNeurone(genome_config, i)
             for i in range(genome_config.node)
         ]
-        self.genotype += [
-            UnaryOutputNeurone(genome_config) for _ in range(genome_config.out)
-        ]
+        self.genotype += [UnaryOutputNeurone(genome_config) for _ in range(genome_config.out)]
         # self.genotype += [BinaryOutputNeurone(genome_config) if randint(0, 1) else UnaryOutputNeurone(genome_config)
         #                  for _ in range(genome_config.out)]
         self.used_node = np.empty((), dtype=bool)
         self.compute_used_node()
 
     def compute_used_node(self):
-        self.used_node = np.zeros(
-            (self.conf.inp + self.conf.node + self.conf.out,), dtype=bool
-        )
+        self.used_node = np.zeros((self.conf.inp + self.conf.node + self.conf.out,), dtype=bool)
         for i in range(self.conf.node + self.conf.out - 1, -1, -1):
             if (
-                    type(self.genotype[i]) is BinaryOutputNeurone
-                    or type(self.genotype[i]) is UnaryOutputNeurone
+                type(self.genotype[i]) is BinaryOutputNeurone
+                or type(self.genotype[i]) is UnaryOutputNeurone
             ):
                 self.used_node[i + self.conf.inp] = True
             if self.used_node[i + self.conf.inp]:
@@ -372,19 +358,18 @@ class Genome:
         if len(self.genotype) != len(other.genotype):
             return False
         for i in range(len(self.genotype)):
-            if self.genotype[i] != other.genotype[i] and self.used_node[i + self.conf.inp] and other.used_node[i + other.conf.inp]:
+            if (
+                self.genotype[i] != other.genotype[i]
+                and self.used_node[i + self.conf.inp]
+                and other.used_node[i + other.conf.inp]
+            ):
                 return False
         return True
 
     @staticmethod
     def from_list_of_dict(l: list, gc: GenomeConfig):
         res = Genome(gc)
-        neurone_types = [
-            UnaryNeurone,
-            BinaryNeurone,
-            UnaryOutputNeurone,
-            BinaryOutputNeurone,
-        ]
+        neurone_types = [UnaryNeurone, BinaryNeurone, UnaryOutputNeurone, BinaryOutputNeurone]
 
         def not_none(x):
             for i in x:
@@ -392,17 +377,14 @@ class Genome:
                     return i
 
         res.genotype = [
-            not_none([Neurone.from_dict(node, gc) for Neurone in neurone_types])
-            for node in l
+            not_none([Neurone.from_dict(node, gc) for Neurone in neurone_types]) for node in l
         ]
         res.compute_used_node()
         return res
 
 
 class Population(object):
-    def __init__(
-            self, genome_config: GenomeConfig, size=50, keep=5, breed=None, muta_count=None
-    ):
+    def __init__(self, genome_config: GenomeConfig, size=50, keep=5, breed=None, muta_count=None):
         self.list_genomes = [Genome(genome_config) for _ in range(size)]
         self.list_scores = [None] * size
         self.genome_config = genome_config
@@ -419,13 +401,13 @@ class Population(object):
 
     def keep_bests(self):
         zipped_result = zip(self.list_scores, self.list_genomes)
-        bests = [t for t in sorted(zipped_result, key=lambda x: x[0])[-self.keep:]][::-1]
+        bests = [t for t in sorted(zipped_result, key=lambda x: x[0])[-self.keep :]][::-1]
         self.list_scores = [i[0] for i in bests]
         self.list_genomes = [i[1] for i in bests]
 
     def next_gen(self):
         zipped_result = zip(self.list_scores, self.list_genomes)
-        new_parents = [t for t in sorted(zipped_result, key=lambda x: x[0])[-self.keep:]][::-1]
+        new_parents = [t for t in sorted(zipped_result, key=lambda x: x[0])[-self.keep :]][::-1]
         new_breed = [
             (None, choice(new_parents)[1].clone().breed(choice(new_parents)[1]))
             for _ in range(self.breed)
@@ -441,9 +423,7 @@ class Population(object):
     def to_list(self) -> [float, dict]:
         tmp_list = []
         for i in range(len(self.list_genomes)):
-            tmp_list.append(
-                (self.list_scores[i], self.list_genomes[i].to_list_of_dict())
-            )
+            tmp_list.append((self.list_scores[i], self.list_genomes[i].to_list_of_dict()))
         return tmp_list
 
     def serialize(self) -> [float, str]:

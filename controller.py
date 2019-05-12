@@ -18,6 +18,7 @@ class Controller(http.server.BaseHTTPRequestHandler):
             [val, gen] = l.split(" ", 1)
             val = float(val)
             from main import KEEP
+
             if len(genotype) < KEEP:
                 score.append(val)
                 genotype.append(gen)
@@ -46,8 +47,8 @@ class Controller(http.server.BaseHTTPRequestHandler):
 def get_top(remote: str):
     res = (
         urllib.request.urlopen("http://{}:{}/".format(remote, PORT), timeout=5)
-            .read()
-            .decode("utf-8")
+        .read()
+        .decode("utf-8")
     )
     return res.splitlines()
 

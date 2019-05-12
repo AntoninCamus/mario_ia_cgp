@@ -3,12 +3,16 @@ import json
 from cgp.cgp_model import Genome, GenomeConfig, Population
 
 
-def deserialize_population(serialized_pop: [], genome_config: GenomeConfig, real_adn=False) -> Population:
+def deserialize_population(
+    serialized_pop: [], genome_config: GenomeConfig, real_adn=False
+) -> Population:
     new_genomes_list = []
     scores = []
     for e in serialized_pop:
         if real_adn:
-            new_genomes_list.append(Genome.from_list_of_dict(json.loads(decode(e))[1], genome_config))
+            new_genomes_list.append(
+                Genome.from_list_of_dict(json.loads(decode(e))[1], genome_config)
+            )
             scores.append(json.loads(decode(e))[0])
         else:
             new_genomes_list.append(Genome.from_list_of_dict(json.loads(e[1]), genome_config))
@@ -42,7 +46,9 @@ def merge_populations(pop: Population, pops: [Population]):
     pop.list_scores = filtered_s
 
 
-def load_population(genome_config: GenomeConfig, save_name: str, save_dir="./saves/", real_adn=False):
+def load_population(
+    genome_config: GenomeConfig, save_name: str, save_dir="./saves/", real_adn=False
+):
     with open("{}{}.json".format(save_dir, save_name), "r") as infile:
         return deserialize_population(json.load(infile), genome_config, real_adn=real_adn)
 
@@ -92,6 +98,6 @@ def decode(s: str):
         "TG": "e",
         "TT": "f",
     }
-    for i in [s[i:i + 2] for i in range(0, len(s), 2)]:
+    for i in [s[i : i + 2] for i in range(0, len(s), 2)]:
         res += switch[i]
     return bytearray.fromhex(res).decode()
