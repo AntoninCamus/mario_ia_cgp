@@ -11,7 +11,7 @@ class Emulator:
         self.env = gym_super_mario_bros.make("SuperMarioBros-2-1-v2")
         self.env = BinarySpaceToDiscreteSpaceEnv(self.env, SIMPLE_MOVEMENT)
 
-    def _make_it_play(self, g: Genome, render: bool) -> float:
+    def _evaluate_genome(self, g: Genome, render: bool = False, debug=False) -> float:
         observation = self.env.reset()
         total_reward = 0.0
         stuck_score = 0
@@ -33,6 +33,8 @@ class Emulator:
                 stuck_score = 0
             if done:
                 break
+        if debug:
+            print("Genome {} got reward {}".format(p.list_genomes[i], p.list_scores[i]))
         return total_reward
 
     @staticmethod
@@ -40,7 +42,4 @@ class Emulator:
         e = Emulator()
         for i in range(len(p.list_genomes)):
             if p.list_scores[i] is None:
-                p.list_scores[i] = e._make_it_play(p.list_genomes[i], render)
-            if debug:
-                print("Genome {} got reward {}".format(p.list_genomes[i], p.list_scores[i]))
-        # Get 5 (or keep) best genome by sorting by mark the list, slice it and reconstruct it
+                p.list_scores[i] = e._evaluate_genome(p.list_genomes[i], render, debug)

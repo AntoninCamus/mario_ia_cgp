@@ -11,6 +11,10 @@ def _get_color_bitmask(color: [], image: np.ndarray) -> np.ndarray:
     return cv2.inRange(image, color, color)
 
 
+def _flatten_output(array: [np.ndarray]) -> [np.ndarray]:
+    return [array.flatten() for array in array]
+
+
 def _detect_color(screen: np.ndarray, colors_target: [np.ndarray]) -> np.ndarray:
     """
     Function that will return a bitmap containing 1 iff :
@@ -54,10 +58,21 @@ def _detect_color(screen: np.ndarray, colors_target: [np.ndarray]) -> np.ndarray
 class PictureProcessor:
     @staticmethod
     def get_dim() -> int:
+        """
+        Provide dimension of the output.
+
+        :return: a number which is the number of np-arrays inside of the output list
+        """
         return 7
 
     @staticmethod
     def _reduce(screen: [[[]]]) -> np.ndarray:
+        """
+        Cut and reduce dimension of the picture.
+
+        :param screen: the output of the emulator of the shapes of [[[R:int,G:int,B:int]*pixels]*rows]
+        :return: the reduced output converted to a np-array of the same shape
+        """
         screen = cv2.resize(screen[100:220], (120, 80))
         # display_rgb(screen)
         return screen
@@ -109,10 +124,6 @@ class PictureProcessor:
         return _get_color_bitmask(FLOOR_COLOR, screen) * 1
 
     @staticmethod
-    def _flatten_output(array: [np.ndarray]) -> [np.ndarray]:
-        return [array.flatten() for array in array]
-
-    @staticmethod
     def process(screen: [[[]]]) -> [np.ndarray]:
         reduced = PictureProcessor._reduce(screen)
 
@@ -147,7 +158,7 @@ class PictureProcessor:
         )
         """
 
-        return PictureProcessor._flatten_output(
+        return _flatten_output(
             [
                 reduced_red,
                 reduced_green,
