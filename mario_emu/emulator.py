@@ -1,6 +1,6 @@
 import gym_super_mario_bros
 from gym_super_mario_bros.actions import SIMPLE_MOVEMENT
-from nes_py.wrappers import BinarySpaceToDiscreteSpaceEnv
+from nes_py.wrappers import JoypadSpace
 
 from cgp.cgp_model import Population, Genome
 from mario_emu.picture_processor import PictureProcessor
@@ -9,7 +9,7 @@ from mario_emu.picture_processor import PictureProcessor
 class Emulator:
     def __init__(self):
         self.env = gym_super_mario_bros.make("SuperMarioBros-2-1-v2")
-        self.env = BinarySpaceToDiscreteSpaceEnv(self.env, SIMPLE_MOVEMENT)
+        self.env = JoypadSpace(self.env, SIMPLE_MOVEMENT)
 
     def _evaluate_genome(self, g: Genome, render: bool = False, debug=False) -> float:
         observation = self.env.reset()
