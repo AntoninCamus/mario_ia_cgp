@@ -43,3 +43,7 @@ class Emulator:
         for i in range(len(p.list_genomes)):
             if p.list_scores[i] is None:
                 p.list_scores[i] = e._evaluate_genome(p.list_genomes[i], render, debug)
+
+    @classmethod
+    def get_action_space_size(cls):
+        return 7

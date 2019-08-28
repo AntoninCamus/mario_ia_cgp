@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import argparse
-import cProfile
 from os import system
 
 import cgp.cgp_utilies
@@ -27,7 +26,7 @@ def learn(mpi_comm=None, debug=False, render=False, save_name=None, host_name=No
     else:
         rank = 0
 
-    cfg = cgp.cgp_utilies.GenomeConfig(PictureProcessor.get_dim(), 7, GENOME_SIZE)
+    cfg = cgp.cgp_utilies.GenomeConfig(PictureProcessor.get_dim(), Emulator.get_action_space_size(), GENOME_SIZE)
 
     if save_name is None:
         pop = cgp.cgp_utilies.Population(cfg, POPULATION_SIZE, KEEP)
@@ -74,20 +73,8 @@ def learn(mpi_comm=None, debug=False, render=False, save_name=None, host_name=No
         i += 1
 
 
-def profile_run():
-    for i in range(2):
-        cfg = cgp.cgp_utilies.GenomeConfig(PictureProcessor.get_dim(), 7, 1000)
-        pop = cgp.cgp_utilies.Population(cfg, 10)
-        Emulator.eval_population(pop)
-        pop.next_gen()
-
-
-def profile():
-    cProfile.run("profile_run()")
-
-
 def visualize(save_name):
-    cfg = cgp.cgp_utilies.GenomeConfig(PictureProcessor.get_dim(), 7, GENOME_SIZE)
+    cfg = cgp.cgp_utilies.GenomeConfig(PictureProcessor.get_dim(), Emulator.get_action_space_size(), GENOME_SIZE)
     pop = cgp.cgp_utilies.load_population(cfg, save_name)
     for (i, gen) in enumerate(pop.list_genomes):
         gen.compute_used_node()
@@ -142,12 +129,6 @@ def main():
         "-m", "--mpi", help="Start the program in distributed with MPI.", action="store_true"
     )
     parser.add_argument(
-        "-p",
-        "--profile",
-        help="Start a profiling of performances, should NOT be used with other options.",
-        action="store_true",
-    )
-    parser.add_argument(
         "-v",
         "--visualize",
         help="Generate graphs for given save name, should NOT be used with other options.",
@@ -156,15 +137,7 @@ def main():
     # PARSING
     args = parser.parse_args()
 
-    if args.profile:
-        if args.debug or args.load or args.mpi or args.collector or args.render or args.visualize:
-            print(
-                "Debug, load, MPI, collector, or render options are not compatible with profiling, aborting."
-            )
-            exit(1)
-        print("Starting profiling")
-        profile()
-    elif args.visualize:
+    if args.visualize:
         visualize(args.visualize)
     else:
         # Configuring variables
