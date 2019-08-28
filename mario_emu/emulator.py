@@ -1,15 +1,13 @@
-import gym_super_mario_bros
-from gym_super_mario_bros.actions import SIMPLE_MOVEMENT
-from nes_py.wrappers import JoypadSpace
+import retro
 
 from cgp.cgp_model import Population, Genome
+from mario_emu.discretizer import SuperMarioDiscretizer
 from mario_emu.picture_processor import PictureProcessor
-
 
 class Emulator:
     def __init__(self):
-        self.env = gym_super_mario_bros.make("SuperMarioBros-2-1-v2")
-        self.env = JoypadSpace(self.env, SIMPLE_MOVEMENT)
+        self.env = retro.make('SuperMarioBros-Nes')
+        self.disc = SuperMarioDiscretizer(self.env)
 
     def _evaluate_genome(self, g: Genome, render: bool = False, debug=False) -> float:
         observation = self.env.reset()
@@ -19,9 +17,7 @@ class Emulator:
             if render:
                 self.env.render()
             ob_flat = PictureProcessor.process(observation)
-            decision = g.evaluate(ob_flat)
-            action = decision.argmax()
-            # action = self.env.action_space.sample()
+            action = self.disc.action(g.evaluate(ob_flat).argmax())
             observation, reward, done, info = self.env.step(action)
             total_reward += reward
             stuck_score += reward
@@ -44,6 +40,6 @@ class Emulator:
             if p.list_scores[i] is None:
                 p.list_scores[i] = e._evaluate_genome(p.list_genomes[i], render, debug)
 
-    @classmethod
-    def get_action_space_size(cls):
-        return 7
+    @staticmethod
+    def get_action_space_size():
+        return SuperMarioDiscretizer(retro.make('SuperMarioBros-Nes')).action_space.n

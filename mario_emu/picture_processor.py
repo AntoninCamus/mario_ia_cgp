@@ -63,7 +63,7 @@ class PictureProcessor:
 
         :return: a number which is the number of np-arrays inside of the output list
         """
-        return 7
+        return 3
 
     @staticmethod
     def _reduce(screen: [[[]]]) -> np.ndarray:
